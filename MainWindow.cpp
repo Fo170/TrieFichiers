@@ -1,4 +1,5 @@
 #include "MainWindow.hpp"
+#include "AppConfig.hpp"
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
@@ -13,7 +14,7 @@
 #include <QUrl>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
-    setWindowTitle("Application Vide");
+    setWindowTitle(QStringLiteral(APP_NAME));
     resize(1000, 650);
 
     toolbox_ = new ComponentToolbox;
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     update_checker_ = new UpdateChecker(
         QStringLiteral(APP_VERSION),
-        QStringLiteral("https://raw.githubusercontent.com/Fo170/ApplicationVide/main/version.json"),
+        QStringLiteral(UPDATE_CHECK_URL),
         this);
     connect(update_checker_, &UpdateChecker::updateAvailable,
             this, &MainWindow::on_update_available);
@@ -84,11 +85,11 @@ void MainWindow::create_menus() {
     connect(a_about, &QAction::triggered, this, [this]() {
         QMessageBox::about(this, "À propos",
             QString(
-                "<h3>ApplicationVide</h3>"
+                "<h3>" APP_NAME "</h3>"
                 "<p>Version %1</p>"
                 "<p>Application Qt6 multi-plateforme.</p>"
-                "<p><a href='https://github.com/Fo170/ApplicationVide'>"
-                "https://github.com/Fo170/ApplicationVide</a></p>")
+                "<p><a href='" APP_HOMEPAGE_URL "'>"
+                APP_HOMEPAGE_URL "</a></p>")
                 .arg(QStringLiteral(APP_VERSION)));
     });
 }

@@ -1,4 +1,5 @@
 #include "UpdateChecker.hpp"
+#include "AppConfig.hpp"
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QNetworkRequest>
@@ -24,7 +25,7 @@ void UpdateChecker::checkForUpdates() {
     QUrl url(checkUrl_);
     QNetworkRequest request{url};
     request.setHeader(QNetworkRequest::UserAgentHeader,
-        QStringLiteral("ApplicationVide/%1").arg(currentVersion_));
+        QStringLiteral(APP_NAME "/%1").arg(currentVersion_));
     request.setTransferTimeout(10000);
     manager_->get(request);
 }

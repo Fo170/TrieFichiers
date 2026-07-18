@@ -20,8 +20,6 @@ if(NOT EXISTS "${RC_OUT}")
     )
 endif()
 
-add_definitions(-DAPP_VERSION="${PROJECT_VERSION}")
-
 add_executable(ApplicationVide
     main.cpp
     MainWindow.cpp

@@ -1,10 +1,11 @@
 #include <QApplication>
 #include <QIcon>
+#include "AppConfig.hpp"
 #include "MainWindow.hpp"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
-    app.setApplicationName("ApplicationVide");
+    app.setApplicationName(QStringLiteral(APP_NAME));
 
     QIcon icone;
     icone.addFile(":/ico/app-256.png", QSize(256, 256));
