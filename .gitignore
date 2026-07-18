@@ -1,0 +1,34 @@
+# Build output
+windows/
+linux/
+
+# Generated files
+app_icon.o
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+*.o
+*.obj
+*.a
+*.so
+
+# Qt / CMake generated
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.autogen
+mocs_compilation.cpp
+qrc_*.cpp
+ui_*.h
+moc_*.cpp
+moc_*.h
+
+# IDE
+.vscode/
+.qt/
+*.user
+*.pro.user*
