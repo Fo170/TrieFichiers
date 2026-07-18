@@ -9,6 +9,8 @@
 #include <QDockWidget>
 #include <QFileInfo>
 #include <QLabel>
+#include <QDesktopServices>
+#include <QUrl>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     setWindowTitle("Application Vide");
@@ -29,9 +31,22 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(toolbox_, &ComponentToolbox::component_selected,
             this, &MainWindow::on_component_selected);
 
+    update_checker_ = new UpdateChecker(
+        QStringLiteral(APP_VERSION),
+        QStringLiteral("https://raw.githubusercontent.com/Fo170/ApplicationVide/main/version.json"),
+        this);
+    connect(update_checker_, &UpdateChecker::updateAvailable,
+            this, &MainWindow::on_update_available);
+    connect(update_checker_, &UpdateChecker::upToDate,
+            this, &MainWindow::on_up_to_date);
+    connect(update_checker_, &UpdateChecker::checkError,
+            this, &MainWindow::on_check_error);
+
     create_menus();
     create_toolbar();
     statusBar()->showMessage("Prêt");
+
+    update_checker_->checkForUpdates();
 }
 
 void MainWindow::create_menus() {
@@ -57,6 +72,11 @@ void MainWindow::create_menus() {
     a_toolbox->setCheckable(true);
     a_toolbox->setChecked(true);
     connect(a_toolbox, &QAction::triggered, this, &MainWindow::basculer_toolbox);
+
+    auto* ma = menuBar()->addMenu("&?");
+
+    auto* a_update = ma->addAction("🔄 Vérifier les mises à jour");
+    connect(a_update, &QAction::triggered, this, &MainWindow::verifier_mise_a_jour);
 }
 
 void MainWindow::create_toolbar() {
@@ -111,6 +131,44 @@ void MainWindow::on_component_selected(const QVariantMap& data) {
 
 void MainWindow::basculer_toolbox() {
     dock_toolbox_->setVisible(!dock_toolbox_->isVisible());
+}
+
+void MainWindow::verifier_mise_a_jour() {
+    if (update_checker_->isChecking()) {
+        statusBar()->showMessage("Vérification des mises à jour en cours...");
+        return;
+    }
+    statusBar()->showMessage("Vérification des mises à jour...");
+    update_checker_->checkForUpdates();
+}
+
+void MainWindow::on_update_available(const QString& version,
+                                      const QString& url,
+                                      const QString& notes) {
+    QString msg = QString(
+        "Une nouvelle version est disponible : %1\n\n"
+        "Version actuelle : %2\n\n"
+        "%3\n\n"
+        "Voulez-vous télécharger la mise à jour ?")
+        .arg(version, QStringLiteral(APP_VERSION), notes);
+
+    auto btn = QMessageBox::question(this, "Mise à jour disponible",
+        msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+
+    if (btn == QMessageBox::Yes && !url.isEmpty())
+        QDesktopServices::openUrl(QUrl(url));
+
+    statusBar()->showMessage(
+        QString("Mise à jour %1 disponible").arg(version));
+}
+
+void MainWindow::on_up_to_date() {
+    statusBar()->showMessage(
+        QString("Application à jour (v%1)").arg(QStringLiteral(APP_VERSION)));
+}
+
+void MainWindow::on_check_error(const QString& error) {
+    statusBar()->showMessage("Vérification de mise à jour échouée : " + error);
 }
 
 void MainWindow::update_title() {
