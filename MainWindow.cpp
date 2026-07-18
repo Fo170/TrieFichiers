@@ -77,6 +77,20 @@ void MainWindow::create_menus() {
 
     auto* a_update = ma->addAction("🔄 Vérifier les mises à jour");
     connect(a_update, &QAction::triggered, this, &MainWindow::verifier_mise_a_jour);
+
+    ma->addSeparator();
+
+    auto* a_about = ma->addAction("ℹ️ À propos");
+    connect(a_about, &QAction::triggered, this, [this]() {
+        QMessageBox::about(this, "À propos",
+            QString(
+                "<h3>ApplicationVide</h3>"
+                "<p>Version %1</p>"
+                "<p>Application Qt6 multi-plateforme.</p>"
+                "<p><a href='https://github.com/Fo170/ApplicationVide'>"
+                "https://github.com/Fo170/ApplicationVide</a></p>")
+                .arg(QStringLiteral(APP_VERSION)));
+    });
 }
 
 void MainWindow::create_toolbar() {
