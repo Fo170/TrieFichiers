@@ -28,14 +28,27 @@ windeployqt windows/ApplicationVide.exe
 ## Project conventions
 
 - Language: C++17
-- UI Framework: Qt6 Widgets
+- UI Framework: Qt6 Widgets / Network
 - Naming: PascalCase for classes, snake_case for files
 - Signals/slots: Qt5 style connect
 - Icons: PNG in `ico/`, registered in `resources.qrc`
 - Project file format: JSON
-- Emojis in UI: 📂 💾 ❌ 🧰
+- Config centralisée: `AppConfig.hpp` (version, URLs, icônes)
+- Emojis in UI: 📂 💾 ❌ 🧰 🧰 🔄 ℹ️
+
+## Key files
+
+| Fichier | Rôle |
+|---|---|
+| `AppConfig.hpp` | Version, URLs, infos icônes |
+| `UpdateChecker.hpp/.cpp` | Vérification de version en ligne |
+| `version.json` | Version distante (hébergé sur GitHub) |
+| `comment_avoir_une_icone.md` | Guide icônes multi-plateforme |
+| `verification_mise_a_jour.md` | Guide mise à jour |
 
 ## Current status
 
 - Compile et s'exécute sous Windows (MinGW)
+- Mise à jour fonctionnelle (HTTP + JSON + QVersionNumber)
+- Icône visible : application Qt (QRC) + Explorateur (.ico PE)
 - Pas encore testé sous Linux

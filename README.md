@@ -8,20 +8,24 @@ Testé et fonctionnel sous **Windows 10/11** (MinGW).
 
 ```
 ApplicationVide/
-├── CMakeLists.txt           # Build système (unique)
+├── CMakeLists.txt           # Build système (Qt6 Widgets + Network)
+├── AppConfig.hpp            # Config centralisée (version, URLs, icônes)
 ├── main.cpp                 # Point d'entrée
 ├── MainWindow.hpp/.cpp      # Fenêtre principale (menus, toolbar, dock)
+├── UpdateChecker.hpp/.cpp   # Vérification de mise à jour (HTTP)
 ├── Project.hpp/.cpp         # Projet JSON (load/save)
 ├── ComponentToolbox.hpp/.cpp# Boîte à outils de composants
 ├── resources.qrc            # Ressources (icônes)
-├── ico/                     # Icônes PNG 32–256px
+├── version.json             # Version distante pour mise à jour
+├── app.rc                   # Ressource Windows (.ico pour Explorateur)
+├── ico/                     # Icônes PNG/ICO/SVG
 ├── windows/                 # Build Windows (exécutable + DLLs)
 └── linux/                   # Build Linux (sortie)
 ```
 
 ## Prérequis
 
-- **Qt 6** (module Widgets)
+- **Qt 6** (modules Widgets, Network)
 - **CMake** ≥ 3.16
 - Compilateur C++17
 
@@ -30,7 +34,6 @@ ApplicationVide/
 ### Windows (MinGW) — testé
 
 ```bash
-# Depuis la racine du projet :
 cmake -S . -B windows -G "MinGW Makefiles" ^
   -DCMAKE_PREFIX_PATH=C:/Qt/6.x.x/mingw_64 ^
   -DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingwXXX_64/bin/g++.exe ^
@@ -53,17 +56,26 @@ cmake -S . -B linux -DCMAKE_PREFIX_PATH=/opt/Qt/6.x.x/gcc_64
 cmake --build linux
 ```
 
-## Déploiement (Windows)
+## Déploiement
 
-Après compilation, copier les DLL Qt à côté de l'exécutable :
+### Windows
 
 ```bash
 windeployqt windows/ApplicationVide.exe
 ```
 
+### Linux
+
+```bash
+# Copier les librairies Qt manuellement (ou lier statiquement)
+```
+
 ## Fonctionnalités
 
-- Menu **Fichier** (📂 Charger / 💾 Sauvegarder projet JSON / ❌ Quitter)
-- Barre d'outils (📂 Charger / 💾 Sauvegarder)
+- Menu **Fichier** → 📂 Charger / 💾 Sauvegarder projet JSON / ❌ Quitter
+- Barre d'outils → 📂 Charger / 💾 Sauvegarder
 - Menu **Outils** → 🧰 Boîte à outils (composants sélectionnables)
+- Menu **?** → 🔄 Vérifier les mises à jour / ℹ️ À propos
 - Projet au format JSON (version, name, components[])
+- Détection de mise à jour en ligne via `version.json` (GitHub raw)
+- Configuration centralisée dans `AppConfig.hpp` (version, URLs, icônes)

@@ -548,13 +548,30 @@ Name: "{commondesktop}\ApplicationVide"; Filename: "{app}\ApplicationVide.exe"
 
 ---
 
-## 6. Arbre complet des fichiers
+## 6. Centralisation dans `AppConfig.hpp`
+
+Toutes les constantes du projet sont regroupées dans `AppConfig.hpp` :
+
+```cpp
+// AppConfig.hpp
+#define APP_NAME "ApplicationVide"
+#define APP_VERSION "1.0.0"
+// Dossier icônes : "ico/"
+// Formats supportés : PNG (32–256px), ICO (32+64px), SVG (optionnel)
+// Préfixe Qt resource : ":/ico/"
+```
+
+C'est le fichier de référence pour les versions, URLs et formats d'icônes.
+
+## 7. Arbre complet des fichiers
 
 ```
 ApplicationVide/                          # Racine du projet
 ├── CMakeLists.txt                        # CMake avec AUTORCC ON
+├── AppConfig.hpp                         # Config centralisée (version, URLs, icônes)
 ├── main.cpp                              # QIcon::addFile + setWindowIcon
 ├── MainWindow.hpp / MainWindow.cpp       # Fenêtre principale
+├── UpdateChecker.hpp / UpdateChecker.cpp # Vérification de mise à jour
 ├── resources.qrc                         # Déclare les PNG pour Qt
 ├── app.rc                                # Déclare le .ico pour Windows PE
 │
@@ -635,9 +652,9 @@ sudo cmake --install linux --prefix /usr/local
 
 ---
 
-## 8. Pièges et solutions
+## 9. Pièges et solutions
 
-### 8.1. Tableau récapitulatif
+### 9.1. Tableau récapitulatif
 
 | Problème | Cause | Solution |
 |---|---|---|
@@ -653,7 +670,7 @@ sudo cmake --install linux --prefix /usr/local
 | L'icône apparaît déformée | Mauvaise résolution ou format | Utiliser des PNG avec transparence (pas de fond coloré uni) |
 | L'icône ne s'affiche pas sous Wine | Wine gère mal certaines ressources PE | Tester sur Windows natif |
 
-### 8.2. Détection de l'environnement dans CMake
+### 9.2. Détection de l'environnement dans CMake
 
 ```cmake
 if(WIN32)
@@ -670,7 +687,7 @@ elseif(APPLE)
 endif()
 ```
 
-### 8.3. Test de l'icône dans l'Explorateur
+### 9.3. Test de l'icône dans l'Explorateur
 
 Pour forcer Windows à rafraîchir le cache d'icônes après avoir changé l'icône de l'exécutable :
 
@@ -688,7 +705,7 @@ Si l'icône n'apparaît toujours pas dans l'Explorateur :
 2. Vérifiez que l'`.ico` contient au moins une résolution 32×32
 3. Déplacez/copiez le `.exe` vers un autre dossier — Windows met en cache par emplacement
 
-### 8.4. Cas particulier : icône dans la barre des tâches
+### 9.4. Cas particulier : icône dans la barre des tâches
 
 Sur Windows 10/11, la barre des tâches peut ne pas afficher l'icône si :
 
@@ -698,20 +715,35 @@ Sur Windows 10/11, la barre des tâches peut ne pas afficher l'icône si :
 
 ---
 
-## 9. Code complet prêt à l'emploi
+## 10. Code complet prêt à l'emploi
+
+### AppConfig.hpp
+
+```cpp
+#ifndef APPCONFIG_HPP
+#define APPCONFIG_HPP
+
+#define APP_NAME "ApplicationVide"
+#define APP_VERSION "1.0.0"
+#define UPDATE_CHECK_URL "https://raw.githubusercontent.com/.../main/version.json"
+#define APP_HOMEPAGE_URL "https://github.com/..."
+
+// Icônes : dossier "ico/" — formats PNG (32-256px), ICO, SVG
+#endif
+```
 
 ### CMakeLists.txt complet
 
 ```cmake
 cmake_minimum_required(VERSION 3.16)
-project(ApplicationVide VERSION 1.0 LANGUAGES CXX)
+project(ApplicationVide VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 file(COPY ico/app.ico DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ico)
 
@@ -757,11 +789,12 @@ IDI_ICON1 ICON "ico/app.ico"
 ```cpp
 #include <QApplication>
 #include <QIcon>
+#include "AppConfig.hpp"
 #include "MainWindow.hpp"
 
 int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
-    app.setApplicationName("ApplicationVide");
+    app.setApplicationName(QStringLiteral(APP_NAME));
 
     QIcon icone;
     icone.addFile(":/ico/app-256.png", QSize(256, 256));
@@ -780,7 +813,7 @@ int main(int argc, char* argv[]) {
 
 ---
 
-## 10. Pour les LLM : checklist à suivre
+## 11. Pour les LLM : checklist à suivre
 
 Quand vous devez ajouter une icône à un projet Qt, appliquez cette checklist **dans l'ordre** :
 
@@ -795,4 +828,5 @@ Quand vous devez ajouter une icône à un projet Qt, appliquez cette checklist *
 9. [ ] Ajouter le `.o` aux sources de `add_executable`
 10. [ ] Compiler et vérifier que PNG et ICO sont dans le binaire
 11. [ ] Lancer `windeployqt` pour déployer les DLLs et plugins
-12. [ ] Sur Linux : créer un fichier `.desktop` avec le chemin absolu vers le PNG
+12. [ ] Vérifier/remplir `AppConfig.hpp` avec la version, les URLs et les infos icônes
+13. [ ] Sur Linux : créer un fichier `.desktop` avec le chemin absolu vers le PNG

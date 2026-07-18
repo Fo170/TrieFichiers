@@ -2,11 +2,12 @@
 
 ## Architecture
 
-Le système de mise à jour repose sur 3 fichiers :
+Le système de mise à jour repose sur ces fichiers :
 
 ```
 ApplicationVide/
-├── CMakeLists.txt            # Définit la version courante (PROJECT_VERSION)
+├── AppConfig.hpp             # Version courante + URLs (centralisé)
+├── CMakeLists.txt            # Version CMake (PROJECT_VERSION, pour packaging)
 ├── UpdateChecker.hpp/.cpp    # Classe qui vérifie la version en ligne
 └── version.json              # Fichier distant hébergé sur GitHub
 ```
@@ -28,23 +29,27 @@ ApplicationVide/
 
 ## 1. Définir la version courante
 
-Dans `CMakeLists.txt` :
+La version est définie dans `AppConfig.hpp` (fichier centralisé) :
 
-```cmake
-project(ApplicationVide VERSION 1.0.0 LANGUAGES CXX)
-
-# Cette variable est injectée comme -DAPP_VERSION="1.0.0"
-# dans les flags du compilateur
-add_definitions(-DAPP_VERSION="${PROJECT_VERSION}")
+```cpp
+// AppConfig.hpp
+#define APP_VERSION "1.0.0"
 ```
 
-`PROJECT_VERSION` est une variable CMake automatique créée par `project()`.
-Elle suit le format `X.Y.Z`.
+C'est le seul endroit à modifier pour changer la version de l'application.
+Le format attendu est `X.Y.Z` (sémantique).
 
 Utilisation dans le code :
 
 ```cpp
+#include "AppConfig.hpp"
 QString versionCourante = QStringLiteral(APP_VERSION);
+```
+
+`CMakeLists.txt` conserve `PROJECT_VERSION` pour le packaging CMake, mais ce n'est pas utilisé par l'application :
+
+```cmake
+project(ApplicationVide VERSION 1.0.0 LANGUAGES CXX)
 ```
 
 ---
@@ -102,12 +107,18 @@ Pensez à le mettre à jour **après chaque release**.
 
 ## 3. Utilisation de `UpdateChecker`
 
+L'URL de vérification et la version sont définies dans `AppConfig.hpp` :
+```cpp
+#define APP_VERSION "1.0.0"
+#define UPDATE_CHECK_URL "https://raw.githubusercontent.com/UTILISATEUR/REPO/main/version.json"
+```
+
 ### Constructeur
 
 ```cpp
 UpdateChecker(
     const QString& currentVersion,  // Version locale (ex: APP_VERSION)
-    const QString& checkUrl,        // URL du version.json distant
+    const QString& checkUrl,        // URL du version.json distant (ex: UPDATE_CHECK_URL)
     QObject* parent = nullptr
 );
 ```
@@ -191,12 +202,17 @@ Ne pas bloquer l'interface pendant la vérification
 
 ### Créer une nouvelle version
 
-1. Mettre à jour la version dans `CMakeLists.txt` :
+1. Mettre à jour la version dans `AppConfig.hpp` (centralisé) :
+   ```cpp
+   #define APP_VERSION "1.1.0"
+   ```
+
+2. (Optionnel) Mettre à jour `CMakeLists.txt` pour le packaging :
    ```cmake
    project(ApplicationVide VERSION 1.1.0 LANGUAGES CXX)
    ```
 
-2. Mettre à jour `version.json` :
+3. Mettre à jour `version.json` :
    ```json
    {
        "version": "1.1.0",
@@ -205,17 +221,17 @@ Ne pas bloquer l'interface pendant la vérification
    }
    ```
 
-3. Compiler et tester
-4. Commiter et pusher sur `main` :
+4. Compiler et tester
+5. Commiter et pusher sur `main` :
    ```bash
-   git add CMakeLists.txt version.json
+   git add AppConfig.hpp CMakeLists.txt version.json
    git commit -m "Release v1.1.0"
    git tag v1.1.0
    git push && git push --tags
    ```
 
-5. Créer une **GitHub Release** avec le binaire compilé
-6. **Vérifier** que `version.json` sur `main` a bien été mis à jour
+6. Créer une **GitHub Release** avec le binaire compilé
+7. **Vérifier** que `version.json` sur `main` a bien été mis à jour
 
 ### Que se passe-t-il côté utilisateur ?
 
@@ -298,8 +314,6 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
-add_definitions(-DAPP_VERSION="${PROJECT_VERSION}")
-
 add_executable(ApplicationVide
     main.cpp
     MainWindow.cpp
@@ -315,8 +329,8 @@ target_link_libraries(ApplicationVide PRIVATE Qt6::Widgets Qt6::Network)
 ## 10. Résumé
 
 | Élément | Fichier | Rôle |
-|---|---|---|
-| Version courante | `CMakeLists.txt` | `PROJECT_VERSION` → `APP_VERSION` |
+|---|---|---|---|
+| Version courante + URLs | `AppConfig.hpp` | `APP_VERSION`, `UPDATE_CHECK_URL` (centralisé) |
 | Vérification | `UpdateChecker.hpp/.cpp` | Appel HTTP, parsing JSON, comparaison |
 | Intégration | `MainWindow.cpp` | Menu "?", signal au démarrage |
 | Version distante | `version.json` sur GitHub | Fichier JSON hébergé en ligne |
@@ -328,13 +342,13 @@ target_link_libraries(ApplicationVide PRIVATE Qt6::Widgets Qt6::Network)
 
 Quand vous devez implémenter ou configurer la vérification de mises à jour :
 
-1. [ ] Définir `PROJECT_VERSION` dans `CMakeLists.txt`
-2. [ ] Ajouter `add_definitions(-DAPP_VERSION="${PROJECT_VERSION}")`
+1. [ ] Définir `APP_VERSION` dans `AppConfig.hpp`
+2. [ ] Définir `UPDATE_CHECK_URL` dans `AppConfig.hpp` (URL du `version.json`)
 3. [ ] Ajouter `Qt6::Network` dans `find_package` et `target_link_libraries`
 4. [ ] Créer `UpdateChecker.hpp` avec la classe, les signaux, les slots
 5. [ ] Créer `UpdateChecker.cpp` avec `QNetworkAccessManager`, parsing JSON, comparaison avec `QVersionNumber`
 6. [ ] Ajouter `UpdateChecker.cpp` aux sources de `add_executable`
-7. [ ] Créer l'instance dans le constructeur avec `APP_VERSION` et l'URL du `version.json`
+7. [ ] Créer l'instance dans le constructeur avec `APP_VERSION` et `UPDATE_CHECK_URL`
 8. [ ] Connecter les 3 signaux (`updateAvailable`, `upToDate`, `checkError`)
 9. [ ] Créer `version.json` à la racine et le pousser sur GitHub
 10. [ ] Ajouter un menu "Vérifier les mises à jour" dans l'UI
