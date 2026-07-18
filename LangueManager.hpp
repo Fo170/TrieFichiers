@@ -5,6 +5,9 @@
 #include <QString>
 #include <QHash>
 #include <QStringList>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QNetworkRequest>
 
 class LangueManager : public QObject {
     Q_OBJECT
@@ -18,16 +21,17 @@ public:
     QStringList availableLanguages() const;
     QStringList languageDisplayNames() const;
     static QString detectSystemLanguage();
+    void downloadLanguage(const QString& code, const QString& remoteUrl);
 
 signals:
     void languageChanged();
+    void languageDownloaded(const QString& code, bool success);
 
 private:
-    QStringList parseLanguageFile(const QString& filePath) const;
-
     QHash<QString, QString> translations_;
     QString langDir_;
     QString currentLang_;
+    QNetworkAccessManager* network_;
     static const QHash<QString, QString> displayNames_;
 };
 

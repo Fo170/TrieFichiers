@@ -20,6 +20,10 @@
 // URL du dépôt GitHub (page d'accueil, releases, etc.)
 #define APP_HOMEPAGE_URL "https://github.com/Fo170/ApplicationVide"
 
+// URL de base pour les fichiers de langue (hébergés sur GitHub raw)
+// L'application peut télécharger un fichier .txt manquant via cette URL
+#define LANG_BASE_URL "https://raw.githubusercontent.com/Fo170/ApplicationVide/main/lang/"
+
 // ── Icônes ───────────────────────────────────────────────────────────────
 // Toutes les icônes sont dans le dossier "ico/" à la racine du projet.
 // Formats supportés :
@@ -50,10 +54,15 @@
 // dans le dossier lang/. Le nom du fichier (sans extension) est le code
 // langue. Exemple : "espanol.txt" → "Espagnol" disponible dans le menu.
 //
+// Auto-téléchargement : si un fichier .txt est manquant, l'application le
+// télécharge depuis LANG_BASE_URL (voir ci-dessus). Aucune recompilation
+// nécessaire si le fichier est déjà présent sur le dépôt distant.
+//
 // Les réglages sont sauvegardés dans "application.ini" (fichier INI éditable)
 // à côté de l'exécutable :
 //   [General]
 //   langue=francais
 //   geometry=...
+// Le fichier .ini est recréé automatiquement s'il est supprimé.
 
 #endif

@@ -2,6 +2,7 @@
 #define MAINWINDOW_HPP
 
 #include <QMainWindow>
+#include <QCloseEvent>
 #include "Project.hpp"
 #include "ComponentToolbox.hpp"
 #include "UpdateChecker.hpp"
@@ -14,6 +15,9 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 public:
     explicit MainWindow(QWidget* parent = nullptr);
+
+protected:
+    void closeEvent(QCloseEvent* event) override;
 
 private slots:
     void charger_projet();
@@ -35,6 +39,7 @@ private:
     void update_title();
     void load_settings();
     void save_settings();
+    void download_language(const QString& code);
 
     Project project_;
     ComponentToolbox* toolbox_;

@@ -163,11 +163,18 @@ void MainWindow::load_settings() {
     QString lang = settings.value("langue", "").toString();
     if (lang.isEmpty())
         lang = LangueManager::detectSystemLanguage();
-    langue_->load(lang);
+
+    if (!langue_->load(lang)) {
+        download_language(lang);
+        if (lang != "anglais")
+            langue_->load("anglais");
+    }
 
     QByteArray geo = settings.value("geometry").toByteArray();
     if (!geo.isEmpty())
         restoreGeometry(geo);
+
+    save_settings();
 }
 
 void MainWindow::save_settings() {
@@ -178,8 +185,29 @@ void MainWindow::save_settings() {
 }
 
 void MainWindow::changer_langue(const QString& langCode) {
-    langue_->load(langCode);
+    if (!langue_->load(langCode))
+        download_language(langCode);
+    else
+        save_settings();
+}
+
+void MainWindow::closeEvent(QCloseEvent* event) {
     save_settings();
+    QMainWindow::closeEvent(event);
+}
+
+void MainWindow::download_language(const QString& code) {
+    QString url = QStringLiteral(LANG_BASE_URL) + code + ".txt";
+    connect(langue_, &LangueManager::languageDownloaded, this,
+        [this, code](const QString& langCode, bool success) {
+            if (langCode != code) return;
+            if (success && langue_->load(code)) {
+                retranslateUi();
+                save_settings();
+                statusBar()->showMessage(langue_->get("status.ready"));
+            }
+        }, Qt::SingleShotConnection);
+    langue_->downloadLanguage(code, url);
 }
 
 void MainWindow::show_about() {

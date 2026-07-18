@@ -76,6 +76,10 @@ windeployqt windows/ApplicationVide.exe
 - Barre d'outils → 📂 Charger / 💾 Sauvegarder
 - Menu **Outils** → 🧰 Boîte à outils (composants sélectionnables)
 - Menu **?** → 🔄 Vérifier les mises à jour / ℹ️ À propos
+- Menu **Langue** → bascule multilingue (🇫🇷 Français, 🇬🇧 English)
+- Détection automatique de la langue du système (Windows et Linux)
 - Projet au format JSON (version, name, components[])
 - Détection de mise à jour en ligne via `version.json` (GitHub raw)
+- **Auto-réparation** : fichiers de langue téléchargés depuis GitHub s'ils sont manquants
+- **Auto-régénération** : fichier `application.ini` recréé immédiatement s'il est supprimé
 - Configuration centralisée dans `AppConfig.hpp` (version, URLs, icônes)

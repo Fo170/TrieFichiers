@@ -40,9 +40,14 @@ windeployqt windows/ApplicationVide.exe
 
 | Fichier | Rôle |
 |---|---|
-| `AppConfig.hpp` | Version, URLs, infos icônes |
+| `AppConfig.hpp` | Version, URLs, infos icônes, URL langues |
+| `MainWindow.hpp/.cpp` | Fenêtre principale (menus, toolbar, dock, closeEvent) |
+| `LangueManager.hpp/.cpp` | Gestion multilingue (load, download, detect, .ini) |
 | `UpdateChecker.hpp/.cpp` | Vérification de version en ligne |
+| `ComponentToolbox.hpp/.cpp` | Boîte à outils de composants (tree) |
+| `Project.hpp/.cpp` | Projet JSON (load/save) |
 | `version.json` | Version distante (hébergé sur GitHub) |
+| `langues.md` | Guide complet pour ajouter/télécharger des langues |
 | `comment_avoir_une_icone.md` | Guide icônes multi-plateforme |
 | `verification_mise_a_jour.md` | Guide mise à jour |
 
@@ -51,4 +56,6 @@ windeployqt windows/ApplicationVide.exe
 - Compile et s'exécute sous Windows (MinGW)
 - Mise à jour fonctionnelle (HTTP + JSON + QVersionNumber)
 - Icône visible : application Qt (QRC) + Explorateur (.ico PE)
+- Multilingue : français/anglais, détection automatique système, téléchargement auto si fichier manquant
+- Réglages : `application.ini` recréé automatiquement s'il est supprimé, sauvegarde immédiate au changement
 - Pas encore testé sous Linux

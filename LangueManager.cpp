@@ -12,6 +12,7 @@ const QHash<QString, QString> LangueManager::displayNames_ = {
 
 LangueManager::LangueManager(const QString& langDir, QObject* parent)
     : QObject(parent), langDir_(langDir) {
+    network_ = new QNetworkAccessManager(this);
 }
 
 bool LangueManager::load(const QString& languageCode) {
@@ -88,4 +89,25 @@ QString LangueManager::detectSystemLanguage() {
         return "anglais";
 
     return "anglais";
+}
+
+void LangueManager::downloadLanguage(const QString& code, const QString& remoteUrl) {
+    QNetworkReply* reply = network_->get(QNetworkRequest(QUrl(remoteUrl)));
+    connect(reply, &QNetworkReply::finished, this, [this, reply, code]() {
+        reply->deleteLater();
+        if (reply->error() != QNetworkReply::NoError) {
+            emit languageDownloaded(code, false);
+            return;
+        }
+        QDir().mkpath(langDir_);
+        QString path = langDir_ + "/" + code + ".txt";
+        QFile f(path);
+        if (!f.open(QIODevice::WriteOnly)) {
+            emit languageDownloaded(code, false);
+            return;
+        }
+        f.write(reply->readAll());
+        f.close();
+        emit languageDownloaded(code, true);
+    });
 }
