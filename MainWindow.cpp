@@ -3,39 +3,52 @@
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
+#include <QActionGroup>
 #include <QToolBar>
 #include <QStatusBar>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QAbstractButton>
 #include <QDockWidget>
 #include <QFileInfo>
 #include <QLabel>
 #include <QDesktopServices>
 #include <QUrl>
+#include <QSettings>
+#include <QDir>
+#include <QCoreApplication>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
-    setWindowTitle(QStringLiteral(APP_NAME));
     resize(1000, 650);
 
+    langue_ = new LangueManager(
+        QCoreApplication::applicationDirPath() + "/lang", this);
+
+    load_settings();
+
     toolbox_ = new ComponentToolbox;
-    dock_toolbox_ = new QDockWidget("Boîte à outils", this);
+    dock_toolbox_ = new QDockWidget(this);
     dock_toolbox_->setWidget(toolbox_);
     dock_toolbox_->setMinimumWidth(180);
     dock_toolbox_->setMaximumWidth(260);
     addDockWidget(Qt::LeftDockWidgetArea, dock_toolbox_);
 
-    auto* central = new QLabel("Ouvrez ou créez un projet pour commencer");
-    central->setAlignment(Qt::AlignCenter);
-    central->setStyleSheet("color: #888; font-size: 14px;");
-    setCentralWidget(central);
+    central_label_ = new QLabel;
+    central_label_->setAlignment(Qt::AlignCenter);
+    central_label_->setStyleSheet("color: #888; font-size: 14px;");
+    setCentralWidget(central_label_);
 
     connect(toolbox_, &ComponentToolbox::component_selected,
-            this, &MainWindow::on_component_selected);
+            this, [this](const QVariantMap& data) {
+        statusBar()->showMessage(
+            QString(langue_->get("status.component_selected") + " : %1 (%2)")
+                .arg(data.value("nom").toString())
+                .arg(data.value("type").toString()));
+    });
 
     update_checker_ = new UpdateChecker(
         QStringLiteral(APP_VERSION),
-        QStringLiteral(UPDATE_CHECK_URL),
-        this);
+        QStringLiteral(UPDATE_CHECK_URL), this);
     connect(update_checker_, &UpdateChecker::updateAvailable,
             this, &MainWindow::on_update_available);
     connect(update_checker_, &UpdateChecker::upToDate,
@@ -45,149 +58,220 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     create_menus();
     create_toolbar();
-    statusBar()->showMessage("Prêt");
+    retranslateUi();
+    statusBar()->showMessage(langue_->get("status.ready"));
 
     update_checker_->checkForUpdates();
 }
 
 void MainWindow::create_menus() {
-    auto* mf = menuBar()->addMenu("&Fichier");
+    menu_fichier_ = menuBar()->addMenu(QString());
+    menu_outils_ = menuBar()->addMenu(QString());
+    menu_langue_ = menuBar()->addMenu(QString());
+    menu_aide_ = menuBar()->addMenu(QString());
 
-    auto* a_charger = mf->addAction("📂 Charger un projet");
-    a_charger->setShortcut(QKeySequence::Open);
-    connect(a_charger, &QAction::triggered, this, &MainWindow::charger_projet);
+    a_charger_ = menu_fichier_->addAction(QString());
+    a_charger_->setShortcut(QKeySequence::Open);
+    connect(a_charger_, &QAction::triggered, this, &MainWindow::charger_projet);
 
-    auto* a_sauver = mf->addAction("💾 Sauvegarder le projet");
-    a_sauver->setShortcut(QKeySequence::Save);
-    connect(a_sauver, &QAction::triggered, this, &MainWindow::sauvegarder_projet);
+    a_sauver_ = menu_fichier_->addAction(QString());
+    a_sauver_->setShortcut(QKeySequence::Save);
+    connect(a_sauver_, &QAction::triggered, this, &MainWindow::sauvegarder_projet);
 
-    mf->addSeparator();
+    menu_fichier_->addSeparator();
 
-    auto* a_quitter = mf->addAction("❌ Quitter");
-    a_quitter->setShortcut(QKeySequence::Quit);
-    connect(a_quitter, &QAction::triggered, this, &QWidget::close);
+    a_quitter_ = menu_fichier_->addAction(QString());
+    a_quitter_->setShortcut(QKeySequence::Quit);
+    connect(a_quitter_, &QAction::triggered, this, &QWidget::close);
 
-    auto* mo = menuBar()->addMenu("&Outils");
+    a_toolbox_ = menu_outils_->addAction(QString());
+    a_toolbox_->setCheckable(true);
+    a_toolbox_->setChecked(dock_toolbox_->isVisible());
+    connect(a_toolbox_, &QAction::triggered, this, &MainWindow::basculer_toolbox);
 
-    auto* a_toolbox = mo->addAction("🧰 Boîte à outils");
-    a_toolbox->setCheckable(true);
-    a_toolbox->setChecked(true);
-    connect(a_toolbox, &QAction::triggered, this, &MainWindow::basculer_toolbox);
-
-    auto* ma = menuBar()->addMenu("&?");
-
-    auto* a_update = ma->addAction("🔄 Vérifier les mises à jour");
-    connect(a_update, &QAction::triggered, this, &MainWindow::verifier_mise_a_jour);
-
-    ma->addSeparator();
-
-    auto* a_about = ma->addAction("ℹ️ À propos");
-    connect(a_about, &QAction::triggered, this, [this]() {
-        QMessageBox::about(this, "À propos",
-            QString(
-                "<h3>" APP_NAME "</h3>"
-                "<p>Version %1</p>"
-                "<p>Application Qt6 multi-plateforme.</p>"
-                "<p><a href='" APP_HOMEPAGE_URL "'>"
-                APP_HOMEPAGE_URL "</a></p>")
-                .arg(QStringLiteral(APP_VERSION)));
-    });
+    connect(langue_, &LangueManager::languageChanged, this, &MainWindow::retranslateUi);
 }
 
 void MainWindow::create_toolbar() {
-    auto* tb = addToolBar("Principale");
+    auto* tb = addToolBar("main");
     tb->setIconSize(QSize(16, 16));
 
-    auto* a_tb_charger = tb->addAction("📂 Charger");
-    connect(a_tb_charger, &QAction::triggered, this, &MainWindow::charger_projet);
+    a_tb_charger_ = tb->addAction(QString());
+    connect(a_tb_charger_, &QAction::triggered, this, &MainWindow::charger_projet);
 
-    auto* a_tb_sauver = tb->addAction("💾 Sauvegarder");
-    connect(a_tb_sauver, &QAction::triggered, this, &MainWindow::sauvegarder_projet);
+    a_tb_sauver_ = tb->addAction(QString());
+    connect(a_tb_sauver_, &QAction::triggered, this, &MainWindow::sauvegarder_projet);
+}
+
+void MainWindow::retranslateUi() {
+    menu_fichier_->setTitle(langue_->get("menu.file"));
+    a_charger_->setText(langue_->get("menu.file.load"));
+    a_sauver_->setText(langue_->get("menu.file.save"));
+    a_quitter_->setText(langue_->get("menu.file.quit"));
+
+    menu_outils_->setTitle(langue_->get("menu.tools"));
+    a_toolbox_->setText(langue_->get("menu.tools.toolbox"));
+
+    menu_langue_->setTitle(langue_->get("menu.language"));
+
+    menu_aide_->setTitle(langue_->get("menu.help"));
+
+    // Rebuild language submenu
+    menu_langue_->clear();
+    auto* group = new QActionGroup(this);
+    QStringList codes = langue_->availableLanguages();
+    QStringList names = langue_->languageDisplayNames();
+    QString current = langue_->currentLanguage();
+
+    for (int i = 0; i < codes.size(); ++i) {
+        auto* a = menu_langue_->addAction(names.at(i));
+        a->setCheckable(true);
+        a->setChecked(codes.at(i) == current);
+        a->setData(codes.at(i));
+        group->addAction(a);
+        connect(a, &QAction::triggered, this, [this, code = codes.at(i)]() {
+            changer_langue(code);
+        });
+    }
+
+    // Rebuild help menu (must be after langue menu to keep order)
+    // Save existing update/about actions if they exist
+    if (!a_update_) {
+        menu_aide_->addSeparator();
+        a_update_ = menu_aide_->addAction(QString());
+        connect(a_update_, &QAction::triggered, this, &MainWindow::verifier_mise_a_jour);
+        menu_aide_->addSeparator();
+        a_about_ = menu_aide_->addAction(QString());
+        connect(a_about_, &QAction::triggered, this, &MainWindow::show_about);
+    }
+    a_update_->setText(langue_->get("menu.help.check_update"));
+    a_about_->setText(langue_->get("menu.help.about"));
+
+    a_tb_charger_->setText(langue_->get("toolbar.load"));
+    a_tb_sauver_->setText(langue_->get("toolbar.save"));
+
+    dock_toolbox_->setWindowTitle(langue_->get("dock.toolbox"));
+    central_label_->setText(langue_->get("central.placeholder"));
+
+    setWindowTitle(langue_->get("app.name"));
+}
+
+void MainWindow::load_settings() {
+    QSettings settings(QCoreApplication::applicationDirPath() + "/application.ini",
+                       QSettings::IniFormat);
+
+    QString lang = settings.value("langue", "").toString();
+    if (lang.isEmpty())
+        lang = LangueManager::detectSystemLanguage();
+    langue_->load(lang);
+
+    QByteArray geo = settings.value("geometry").toByteArray();
+    if (!geo.isEmpty())
+        restoreGeometry(geo);
+}
+
+void MainWindow::save_settings() {
+    QSettings settings(QCoreApplication::applicationDirPath() + "/application.ini",
+                       QSettings::IniFormat);
+    settings.setValue("langue", langue_->currentLanguage());
+    settings.setValue("geometry", saveGeometry());
+}
+
+void MainWindow::changer_langue(const QString& langCode) {
+    langue_->load(langCode);
+    save_settings();
+}
+
+void MainWindow::show_about() {
+    QString title = langue_->get("dialog.about.title");
+    QString text = QString(langue_->get("dialog.about.text"))
+        .arg(QStringLiteral(APP_NAME))
+        .arg(QStringLiteral(APP_VERSION))
+        + "<p><a href='" APP_HOMEPAGE_URL "'>"
+          APP_HOMEPAGE_URL "</a></p>";
+    QMessageBox::about(this, title, text);
 }
 
 void MainWindow::charger_projet() {
     QString p = QFileDialog::getOpenFileName(
-        this, "Charger un projet", QString(),
+        this, langue_->get("menu.file.load"), QString(),
         "Projet JSON (*.json);;Tous (*)");
     if (p.isEmpty()) return;
 
     if (!project_.load(p)) {
-        QMessageBox::warning(this, "Erreur",
-            "Impossible de charger le fichier projet.");
+        QMessageBox::warning(this, langue_->get("menu.file.load"),
+            langue_->get("dialog.error.load"));
         return;
     }
 
     update_title();
-    statusBar()->showMessage("Projet chargé : " + p);
+    statusBar()->showMessage(langue_->get("status.loaded") + " : " + p);
 }
 
 void MainWindow::sauvegarder_projet() {
     QString p = QFileDialog::getSaveFileName(
-        this, "Sauvegarder le projet", QString(),
+        this, langue_->get("menu.file.save"), QString(),
         "Projet JSON (*.json);;Tous (*)");
     if (p.isEmpty()) return;
 
     if (!project_.save(p)) {
-        QMessageBox::warning(this, "Erreur",
-            "Impossible de sauvegarder le fichier projet.");
+        QMessageBox::warning(this, langue_->get("menu.file.save"),
+            langue_->get("dialog.error.save"));
         return;
     }
 
     update_title();
-    statusBar()->showMessage("Projet sauvegardé : " + p);
-}
-
-void MainWindow::on_component_selected(const QVariantMap& data) {
-    statusBar()->showMessage(
-        QString("Composant sélectionné : %1 (type: %2)")
-            .arg(data.value("nom").toString())
-            .arg(data.value("type").toString()));
+    statusBar()->showMessage(langue_->get("status.saved") + " : " + p);
 }
 
 void MainWindow::basculer_toolbox() {
     dock_toolbox_->setVisible(!dock_toolbox_->isVisible());
+    a_toolbox_->setChecked(dock_toolbox_->isVisible());
 }
 
 void MainWindow::verifier_mise_a_jour() {
     if (update_checker_->isChecking()) {
-        statusBar()->showMessage("Vérification des mises à jour en cours...");
+        statusBar()->showMessage(langue_->get("status.update_checking"));
         return;
     }
-    statusBar()->showMessage("Vérification des mises à jour...");
+    statusBar()->showMessage(langue_->get("status.update_check"));
     update_checker_->checkForUpdates();
 }
 
 void MainWindow::on_update_available(const QString& version,
                                       const QString& url,
                                       const QString& notes) {
-    QString msg = QString(
-        "Une nouvelle version est disponible : %1\n\n"
-        "Version actuelle : %2\n\n"
-        "%3\n\n"
-        "Voulez-vous télécharger la mise à jour ?")
+    QString msg = QString(langue_->get("dialog.update.message"))
         .arg(version, QStringLiteral(APP_VERSION), notes);
 
-    auto btn = QMessageBox::question(this, "Mise à jour disponible",
-        msg, QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    QMessageBox mb(this);
+    mb.setWindowTitle(langue_->get("dialog.update.title"));
+    mb.setText(msg);
+    mb.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    mb.button(QMessageBox::Yes)->setText(langue_->get("dialog.update.yes"));
+    mb.button(QMessageBox::No)->setText(langue_->get("dialog.update.no"));
+    mb.setDefaultButton(QMessageBox::Yes);
 
-    if (btn == QMessageBox::Yes && !url.isEmpty())
+    if (mb.exec() == QMessageBox::Yes && !url.isEmpty())
         QDesktopServices::openUrl(QUrl(url));
 
     statusBar()->showMessage(
-        QString("Mise à jour %1 disponible").arg(version));
+        QString(langue_->get("status.update_available")).arg(version));
 }
 
 void MainWindow::on_up_to_date() {
     statusBar()->showMessage(
-        QString("Application à jour (v%1)").arg(QStringLiteral(APP_VERSION)));
+        QString(langue_->get("status.up_to_date"))
+            .arg(QStringLiteral(APP_VERSION)));
 }
 
 void MainWindow::on_check_error(const QString& error) {
-    statusBar()->showMessage("Vérification de mise à jour échouée : " + error);
+    statusBar()->showMessage(
+        langue_->get("status.update_failed") + " : " + error);
 }
 
 void MainWindow::update_title() {
-    QString titre = "Application Vide";
+    QString titre = langue_->get("app.name");
     if (!project_.file_path().isEmpty())
         titre = QFileInfo(project_.file_path()).fileName() + " — " + titre;
     setWindowTitle(titre);

@@ -37,4 +37,23 @@
 //
 // Préfixe Qt resource : ":/ico/"
 
+// ── Langues ───────────────────────────────────────────────────────────────
+// Les fichiers de langue sont dans le dossier "lang/" à côté de l'exécutable.
+//   lang/francais.txt     Français (inclut les émoji de l'interface)
+//   lang/anglais.txt      English
+//
+// Format : une entrée par ligne, encodage UTF-8
+//   # commentaire
+//   cle=valeur
+//
+// L'utilisateur peut ajouter une nouvelle langue en créant un fichier .txt
+// dans le dossier lang/. Le nom du fichier (sans extension) est le code
+// langue. Exemple : "espanol.txt" → "Espagnol" disponible dans le menu.
+//
+// Les réglages sont sauvegardés dans "application.ini" (fichier INI éditable)
+// à côté de l'exécutable :
+//   [General]
+//   langue=francais
+//   geometry=...
+
 #endif

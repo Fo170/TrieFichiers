@@ -9,6 +9,7 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 
 file(COPY ico/app.ico DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ico)
+file(COPY lang/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lang)
 
 # Pre-compile .rc to .o at configure time (path workaround for windres)
 set(WINDRES "C:/Qt/Tools/mingw1310_64/bin/windres.exe")
@@ -26,6 +27,7 @@ add_executable(ApplicationVide
     Project.cpp
     ComponentToolbox.cpp
     UpdateChecker.cpp
+    LangueManager.cpp
     resources.qrc
     ${RC_OUT}
 )

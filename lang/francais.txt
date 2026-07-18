@@ -1,0 +1,44 @@
+# Français — ApplicationVide
+app.name=ApplicationVide
+
+menu.file=&Fichier
+menu.file.load=📂 Charger un projet
+menu.file.save=💾 Sauvegarder le projet
+menu.file.quit=❌ Quitter
+
+menu.tools=&Outils
+menu.tools.toolbox=🧰 Boîte à outils
+
+menu.help=&?
+menu.help.check_update=🔄 Vérifier les mises à jour
+menu.help.about=ℹ️ À propos
+
+menu.language=&Langue
+
+toolbar.load=📂 Charger
+toolbar.save=💾 Sauvegarder
+
+status.ready=Prêt
+status.loaded=Projet chargé
+status.saved=Projet sauvegardé
+status.up_to_date=Application à jour (v%s)
+status.update_check=Vérification des mises à jour...
+status.update_checking=Vérification des mises à jour en cours...
+status.update_failed=Vérification échouée
+status.update_available=Mise à jour %s disponible
+status.component_selected=Composant sélectionné
+
+central.placeholder=Ouvrez ou créez un projet pour commencer
+dock.toolbox=Boîte à outils
+toolbox.title=Boîte à outils
+
+dialog.about.title=À propos
+dialog.about.text=<h3>%s</h3><p>Version %s</p><p>Application Qt6 multi-plateforme.</p>
+
+dialog.update.title=Mise à jour disponible
+dialog.update.message=Une nouvelle version est disponible : %s\n\nVersion actuelle : %s\n\n%s\n\nVoulez-vous télécharger la mise à jour ?
+dialog.update.yes=Télécharger
+dialog.update.no=Plus tard
+
+dialog.error.load=Impossible de charger le fichier projet.
+dialog.error.save=Impossible de sauvegarder le fichier projet.

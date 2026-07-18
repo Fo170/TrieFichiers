@@ -1,0 +1,44 @@
+# English — ApplicationVide
+app.name=ApplicationVide
+
+menu.file=&File
+menu.file.load=📂 Load project
+menu.file.save=💾 Save project
+menu.file.quit=❌ Quit
+
+menu.tools=&Tools
+menu.tools.toolbox=🧰 Toolbox
+
+menu.help=&?
+menu.help.check_update=🔄 Check for updates
+menu.help.about=ℹ️ About
+
+menu.language=&Language
+
+toolbar.load=📂 Load
+toolbar.save=💾 Save
+
+status.ready=Ready
+status.loaded=Project loaded
+status.saved=Project saved
+status.up_to_date=Application is up to date (v%s)
+status.update_check=Checking for updates...
+status.update_checking=Update check in progress...
+status.update_failed=Update check failed
+status.update_available=Update %s available
+status.component_selected=Component selected
+
+central.placeholder=Open or create a project to start
+dock.toolbox=Toolbox
+toolbox.title=Toolbox
+
+dialog.about.title=About
+dialog.about.text=<h3>%s</h3><p>Version %s</p><p>Qt6 cross-platform application.</p>
+
+dialog.update.title=Update available
+dialog.update.message=A new version is available: %s\n\nCurrent version: %s\n\n%s\n\nWould you like to download the update?
+dialog.update.yes=Download
+dialog.update.no=Later
+
+dialog.error.load=Unable to load project file.
+dialog.error.save=Unable to save project file.
