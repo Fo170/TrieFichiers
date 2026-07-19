@@ -1465,3 +1465,184 @@ rm -rf qml/              # Si pas de QML
 ```
 
 Sauvegarde typique : 50-80 Mo → 15-25 Mo.
+
+---
+
+## 21. Technologies Qt utilisées dans AppNeurone
+
+### Modules CMake
+
+```
+Qt6::Widgets    — UI complète (fenêtres, widgets, graphics, événements)
+Qt6::Network    — Mise à jour, téléchargement langues
+```
+
+### Arborescence des classes Qt
+
+| Famille | Classes |
+|---------|---------|
+| **Application/Fenêtres** | `QApplication`, `QMainWindow`, `QDialog`, `QWidget`, `QSplitter` |
+| **Graphics/2D** | `QGraphicsScene`, `QGraphicsView`, `QGraphicsObject`, `QGraphicsLineItem`, `QGraphicsEllipseItem`, `QGraphicsPolygonItem`, `QGraphicsSimpleTextItem` |
+| **Événements** | `QGraphicsSceneMouseEvent`, `QGraphicsSceneHoverEvent`, `QGraphicsSceneWheelEvent`, `QGraphicsSceneContextMenuEvent`, `QKeyEvent`, `QWheelEvent`, `QMouseEvent` |
+| **Pinceaux/formes** | `QPainter`, `QPen`, `QFont`, `QPainterPath`, `QPainterPathStroker`, `QStyleOptionGraphicsItem`, `QFontMetrics` |
+| **Widgets de formulaire** | `QPushButton`, `QLabel`, `QLineEdit`, `QComboBox`, `QCheckBox`, `QGroupBox`, `QSpinBox`, `QDoubleSpinBox`, `QTableWidget`, `QTabWidget`, `QTreeWidget` |
+| **Mise en page** | `QVBoxLayout`, `QHBoxLayout`, `QFormLayout`, `QHeaderView`, `QFrame` |
+| **Fichiers/IO** | `QFile`, `QFileInfo`, `QDir`, `QTextStream`, `QFileDialog` |
+| **JSON** | `QJsonDocument`, `QJsonObject`, `QJsonArray` |
+| **Réseau** | `QNetworkAccessManager`, `QNetworkReply`, `QNetworkRequest` |
+| **Actions/menus** | `QMenu`, `QMenuBar`, `QAction`, `QToolBar`, `QStatusBar` |
+| **Utilitaires** | `QTimer`, `QIcon`, `QMap`, `QVector`, `QVariantMap`, `QString`, `QStringList`, `QPointF`, `QInputDialog`, `QMessageBox`, `QCoreApplication`, `QSettings`, `QVersionNumber`, `QDesktopServices` |
+| **Math** | `QtMath` (qFabs, qFloor, etc.) |
+
+### Résumé de l'architecture Qt
+
+- **Pas de Qt Quick/QML** — 100% widgets Qt classiques
+- **Rendu 2D custom** via `QPainter` sur des `QGraphicsObject`
+- **Pas de Qt3D/OpenGL** — tout en 2D logicielle
+- **CMAKE_AUTOMOC** activé (signaux/slots)
+- **CMAKE_AUTORCC** activé (ressources `.qrc`)
+- **Ressources** embarquées (icônes PNG)
+- **Polices** : configuration du fallback émoji dans `main.cpp`
+
+---
+
+## 22. Correction des problèmes d'émoji (noir et blanc → couleur)
+
+### Problème
+
+Les emoji (`🧠`, `📂`, `💾`, etc.) s'affichaient en noir et blanc dans toute l'interface Qt (menus, toolbars, labels, status bar) après une mise à jour de Qt.
+
+### Cause
+
+Sous Windows, `QFont::setFamilies()` permet de définir une liste de polices de secours. Le code original faisait :
+
+```cpp
+QFont f = app.font();
+QStringList fam = f.families();       // → ["Segoe UI", ...]
+fam << "Noto Color Emoji" << "Symbola" << "Segoe UI Emoji";
+f.setFamilies(fam);
+app.setFont(f);
+```
+
+Le problème : `Segoe UI` (première police de la liste) contient ses propres glyphes d'emoji, mais en **noir et blanc**. Qt utilise la première police qui supporte le caractère, donc il prend le glyphe B&W de `Segoe UI` et ne descend jamais jusqu'à `Segoe UI Emoji`.
+
+Sous Qt 6.3+ (qui utilise DirectWrite au lieu de GDI), cette chaîne de fallback explicite **écrase** la chaîne native de DirectWrite qui, elle, sait associer `Segoe UI` pour le texte et `Segoe UI Emoji` pour les emoji colorés automatiquement.
+
+### Solution
+
+Mettre les polices emoji **avant** `Segoe UI` dans la chaîne, pour que les caractères emoji trouvent `Segoe UI Emoji` en premier :
+
+```cpp
+QFont f = app.font();
+QStringList fam = f.families();
+// Retirer les polices emoji si déjà présentes
+fam.removeAll("Segoe UI Emoji");
+fam.removeAll("Noto Color Emoji");
+fam.removeAll("Apple Color Emoji");
+fam.removeAll("Symbola");
+// Les ajouter en tête de liste
+fam.push_front("Segoe UI Emoji");
+fam.push_front("Noto Color Emoji");
+fam.push_front("Apple Color Emoji");
+fam.push_front("Symbola");
+f.setFamilies(fam);
+app.setFont(f);
+```
+
+Ordre final de la chaîne de fallback :
+
+1. `Segoe UI Emoji` → rend les emoji en couleur, lettres/chiffres en caractères texte standard
+2. `Noto Color Emoji` → fallback Linux
+3. `Apple Color Emoji` → fallback macOS
+4. `Symbola` → fallback générique
+5. Polices système d'origine (`Segoe UI`, etc.) → fallback ultime
+
+**Note importante** : `Segoe UI Emoji` contient les lettres latines et chiffres comme des **glyphes texte standards**, pas comme des emoji. Les caractères ASCII (`a`, `1`, `#`) ne deviennent pas des pictogrammes colorés.
+
+### Cas particulier : barres de titre Windows
+
+Les titres de fenêtres sont dessinés par Windows (zone non-client du gestionnaire de fenêtres), pas par Qt. Windows utilise `Segoe UI` (B&W) pour la barre de titre, et `Segoe UI Emoji` n'est jamais consulté. Les emoji dans les titres restent donc **toujours en noir et blanc** — c'est une limitation du système, pas de Qt.
+
+Solutions pour les titres :
+- Accepter le B&W (simple, cohérent avec les autres applications Windows)
+- Remplacer les emoji par du texte
+- Utiliser une barre de titre personnalisée (`Qt::FramelessWindowHint` + widget titre dessiné par Qt) — beaucoup plus complexe
+
+---
+
+## 23. Erreurs DLL récurrentes — conflit de versions Qt
+
+### Symptômes
+
+```
+Le point d'entrée de procédure _Z9qBadAllocv est introuvable
+dans la bibliothèque de liens dynamiques.
+
+Le point d'entrée de procédure _Z21qRegisterResourceDataiPKhS0_S0_
+est introuvable dans la bibliothèque de liens dynamiques.
+```
+
+Ces symboles C++ manglés correspondent respectivement à `qBadAlloc()` et `qRegisterResourceData(int, unsigned char const*, unsigned char const*, unsigned char const*)` — deux fonctions exportées par `Qt6Core.dll`.
+
+### Cause
+
+L'exécutable a été compilé avec une version de Qt (ex: Qt 6.11.0) mais charge au runtime les DLL Qt d'une **version différente** (ex: Qt 6.2, Qt 6.5). Les symboles exportés changent entre versions mineures de Qt 6.
+
+Scénarios typiques :
+
+| Scénario | Cause |
+|----------|-------|
+| Build réutilisé avec DLL d'une ancienne installation | `windeployqt` non exécuté après rebuild |
+| Projet partagé entre machines avec Qt versions différentes | DLL d'une version A, binaire compilé avec version B |
+| Mise à jour de Qt sans rebuild complet | Cache CMake + DLL obsolètes |
+
+### Solution
+
+#### 1. Nettoyer et rebuild
+
+```bash
+# Supprimer le cache CMake et les DLL
+rm -rf qtgui/build/CMakeCache.txt qtgui/build/CMakeFiles
+rm -f qtgui/build/*.dll qtgui/build/*.exe
+
+# Reconfigurer
+cmake -S qtgui -B qtgui/build -G Ninja \
+    -DCMAKE_PREFIX_PATH="C:/Qt/6.11.0/mingw_64" \
+    -DCMAKE_CXX_COMPILER="C:/Qt/Tools/mingw1310_64/bin/g++.exe" \
+    -DCMAKE_MAKE_PROGRAM="C:/Qt/Tools/Ninja/ninja.exe"
+
+# Recompiler
+cmake --build qtgui/build
+```
+
+#### 2. Déployer les DLL de la bonne version avec windeployqt
+
+```bash
+# Déployer les DLL Qt correspondant EXACTEMENT à la version de compilation
+windeployqt qtgui/build/AppNeurone.exe
+```
+
+`windeployqt` copie automatiquement :
+- `Qt6Core.dll`, `Qt6Gui.dll`, `Qt6Widgets.dll`, `Qt6Network.dll`
+- Plugins : `platforms/qwindows.dll`, `styles/`, `tls/`, `imageformats/`, etc.
+- Les DLL OpenSSL si présentes (optionnel)
+- Fichiers de traduction Qt (`.qm`)
+
+Les DLL copiées proviennent du même dossier Qt que celui utilisé pour la compilation (ex: `C:/Qt/6.11.0/mingw_64/bin/`).
+
+#### 3. Vérification
+
+```bash
+# Lister les DLL du dossier build
+ls qtgui/build/Qt*.dll
+
+# Vérifier la version (sous Windows, clic droit → Propriétés → Détails)
+# Ou avec un outil comme Dependency Walker
+```
+
+#### 4. Prévention
+
+- Toujours exécuter `windeployqt` après un `cmake --build`
+- Ne pas mélanger des DLL de versions Qt différentes dans le même dossier
+- Après une mise à jour de Qt, toujours rebuild from scratch (supprimer `CMakeCache.txt`)
+- Si le projet est partagé via git, ne pas versionner les DLL — chaque développeur exécute `windeployqt` localement
