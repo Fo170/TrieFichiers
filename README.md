@@ -23,6 +23,7 @@ ApplicationVide/
 ├── linux/                   # Build Linux (sortie)
 ├── guide_implantation_fonctionnalites.md  # Guide complet : 6 fonctionnalités Qt + pièges
 ├── "Qt GUI — bibliothèques et technologies utilisées.md"  # Dépendances Qt détaillées
+├── application_multiplatforme.md  # Compilation croisée Windows + Linux
 └── AGENTS.md                # Guide de travail pour LLM (OpenCode)
 ```
 
@@ -96,4 +97,5 @@ windeployqt windows/ApplicationVide.exe
 | `langues.md` | Ajouter / télécharger une langue |
 | `comment_avoir_une_icone.md` | Icônes multi-plateforme |
 | `verification_mise_a_jour.md` | Fonctionnement de la mise à jour |
+| `application_multiplatforme.md` | Structure et compilation croisée Windows + Linux |
 | `AGENTS.md` | Guide de travail pour LLM (OpenCode)

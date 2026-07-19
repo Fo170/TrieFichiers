@@ -57,6 +57,7 @@ windeployqt windows/ApplicationVide.exe
 | `langues.md` | Guide: adding/downloading languages |
 | `comment_avoir_une_icone.md` | Multi-platform icon guide |
 | `verification_mise_a_jour.md` | Update check guide |
+| `application_multiplatforme.md` | Cross-platform build structure & commands |
 
 ## Notes
 
