@@ -1,9 +1,9 @@
 # Project Guide for opencode
 
-## Build commands
+## Build
 
 ```bash
-# Windows (MinGW) — testé Qt 6.11.0 / MinGW 13.10
+# Windows (MinGW) — tested Qt 6.11.0 / MinGW 13.10
 cmake -S . -B windows -G "MinGW Makefiles" ^
   -DCMAKE_PREFIX_PATH=C:/Qt/6.x.x/mingw_64 ^
   -DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingwXXX_64/bin/g++.exe ^
@@ -25,37 +25,42 @@ cmake --build linux
 windeployqt windows/ApplicationVide.exe
 ```
 
-## Project conventions
+## Conventions
 
-- Language: C++17
-- UI Framework: Qt6 Widgets / Network
-- Naming: PascalCase for classes, snake_case for files
-- Signals/slots: Qt5 style connect
-- Icons: PNG in `ico/`, registered in `resources.qrc`
-- Project file format: JSON
-- Config centralisée: `AppConfig.hpp` (version, URLs, icônes)
-- Emojis in UI: 📂 💾 ❌ 🧰 🧰 🔄 ℹ️
+- Language: C++17, Qt6 (Widgets + Network), CMake ≥3.16
+- PascalCase classes, snake_case files, Qt5-style connect (modern functor syntax)
+- `CMAKE_AUTOMOC` and `CMAKE_AUTORCC` enabled
+- Config centralised in `AppConfig.hpp` — update `APP_VERSION` here and in `version.json` for releases
+- Language files: `lang/<code>.txt`, UTF-8, `key=value` format, `#` comments
+- Icons: PNG in `ico/` via `resources.qrc` (prefixed `:/ico/`); PE icon via `app.rc` → `windres`
+- Settings: `application.ini` next to executable, auto-regenerated if missing
+- No test framework configured
+
+## Build quirks
+
+- `app.rc` is pre-compiled with `windres` at CMake **configure** time (`CMakeLists.txt:14-22`). If `app_icon.o` is missing, reconfigure with `cmake`.
+- `windows/` and `linux/` are gitignored build output directories; `lang/` and `ico/app.ico` are copied to the build dir at configure time.
 
 ## Key files
 
-| Fichier | Rôle |
+| File | Role |
 |---|---|
-| `AppConfig.hpp` | Version, URLs, infos icônes, URL langues |
-| `MainWindow.hpp/.cpp` | Fenêtre principale (menus, toolbar, dock, closeEvent) |
-| `LangueManager.hpp/.cpp` | Gestion multilingue (load, download, detect, .ini) |
-| `UpdateChecker.hpp/.cpp` | Vérification de version en ligne |
-| `ComponentToolbox.hpp/.cpp` | Boîte à outils de composants (tree) |
-| `Project.hpp/.cpp` | Projet JSON (load/save) |
-| `version.json` | Version distante (hébergé sur GitHub) |
-| `langues.md` | Guide complet pour ajouter/télécharger des langues |
-| `comment_avoir_une_icone.md` | Guide icônes multi-plateforme |
-| `verification_mise_a_jour.md` | Guide mise à jour |
+| `AppConfig.hpp` | Central config: version, URLs, icon info, lang base URL |
+| `MainWindow.hpp/.cpp` | Main window: menus, toolbar, dock, closeEvent, settings |
+| `LangueManager.hpp/.cpp` | Multi-language: load `.txt`, download from GitHub, system detect |
+| `UpdateChecker.hpp/.cpp` | Online version check via HTTP + JSON + QVersionNumber (10s timeout) |
+| `ComponentToolbox.hpp/.cpp` | Component toolbox tree widget with hardcoded categories |
+| `Project.hpp/.cpp` | JSON project load/save (`version`, `name`, `components[]`) |
+| `version.json` | Remote version manifest (hosted on GitHub raw) |
+| `guide_implantation_fonctionnalites.md` | Full how-to: 6 Qt features + 20 pitfall sections (emojis, SSL, debug, signals, QSS, deploy) |
+| `Qt GUI — bibliothèques et technologies utilisées.md` | All Qt classes & technologies by category |
+| `langues.md` | Guide: adding/downloading languages |
+| `comment_avoir_une_icone.md` | Multi-platform icon guide |
+| `verification_mise_a_jour.md` | Update check guide |
 
-## Current status
+## Notes
 
-- Compile et s'exécute sous Windows (MinGW)
-- Mise à jour fonctionnelle (HTTP + JSON + QVersionNumber)
-- Icône visible : application Qt (QRC) + Explorateur (.ico PE)
-- Multilingue : français/anglais, détection automatique système, téléchargement auto si fichier manquant
-- Réglages : `application.ini` recréé automatiquement s'il est supprimé, sauvegarde immédiate au changement
-- Pas encore testé sous Linux
+- Language auto-detect: system locale → `francais`/`anglais`, falls back to `anglais`
+- Missing language files auto-downloaded from `LANG_BASE_URL` (GitHub raw)
+- `application.ini` auto-recreated if deleted; saves `langue` and `geometry`
+- Tested on Windows (MinGW), not yet on Linux

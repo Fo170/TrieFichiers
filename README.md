@@ -20,7 +20,10 @@ ApplicationVide/
 ├── app.rc                   # Ressource Windows (.ico pour Explorateur)
 ├── ico/                     # Icônes PNG/ICO/SVG
 ├── windows/                 # Build Windows (exécutable + DLLs)
-└── linux/                   # Build Linux (sortie)
+├── linux/                   # Build Linux (sortie)
+├── guide_implantation_fonctionnalites.md  # Guide complet : 6 fonctionnalités Qt + pièges
+├── "Qt GUI — bibliothèques et technologies utilisées.md"  # Dépendances Qt détaillées
+└── AGENTS.md                # Guide de travail pour LLM (OpenCode)
 ```
 
 ## Prérequis
@@ -83,3 +86,14 @@ windeployqt windows/ApplicationVide.exe
 - **Auto-réparation** : fichiers de langue téléchargés depuis GitHub s'ils sont manquants
 - **Auto-régénération** : fichier `application.ini` recréé immédiatement s'il est supprimé
 - Configuration centralisée dans `AppConfig.hpp` (version, URLs, icônes)
+
+## Documentation
+
+| Document | Contenu |
+|---|---|
+| `guide_implantation_fonctionnalites.md` | Code complet des 6 fonctionnalités Qt + 20 sections de pièges et bonnes pratiques |
+| `Qt GUI — bibliothèques et technologies utilisées.md` | Liste exhaustive des classes Qt par catégorie |
+| `langues.md` | Ajouter / télécharger une langue |
+| `comment_avoir_une_icone.md` | Icônes multi-plateforme |
+| `verification_mise_a_jour.md` | Fonctionnement de la mise à jour |
+| `AGENTS.md` | Guide de travail pour LLM (OpenCode)
