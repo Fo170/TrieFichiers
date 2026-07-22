@@ -1,5 +1,5 @@
 {
     "version": "1.0.2",
-    "url": "https://github.com/Fo170/TrieFichiers/releases",
+    "url": "https://github.com/Fo170/TrieFichiers",
     "notes": "Nettoyage de fichiers vides, Thumbs.db, dossiers vides — analyse + suppression"
 }
