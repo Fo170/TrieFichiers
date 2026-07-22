@@ -48,4 +48,6 @@ void ComponentToolbox::populate_categories() {
     auto* nettoyage = groupe("🧹 Nettoyage");
     item(nettoyage, "Supprimer fichiers vides",
          {{"type", "cleanup"}, {"tool", "clean_all"}});
+    item(nettoyage, "Supprimer une extension",
+         {{"type", "cleanup"}, {"tool", "strip_extension"}});
 }

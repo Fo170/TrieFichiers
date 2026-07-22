@@ -36,6 +36,7 @@ add_executable(TrieFichiers
     LangueManager.cpp
     FolderCleaner.cpp
     CleanupDialog.cpp
+    StripDialog.cpp
     resources.qrc
     ${RC_FILES}
 )

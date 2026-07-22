@@ -1,6 +1,7 @@
 #include "MainWindow.hpp"
 #include "AppConfig.hpp"
 #include "CleanupDialog.hpp"
+#include "StripDialog.hpp"
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
@@ -42,8 +43,13 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     connect(toolbox_, &ComponentToolbox::component_selected,
             this, [this](const QVariantMap& data) {
         if (data.value("type") == "cleanup") {
-            CleanupDialog dlg({}, this);
-            dlg.exec();
+            if (data.value("tool") == "strip_extension") {
+                StripDialog dlg({}, this);
+                dlg.exec();
+            } else {
+                CleanupDialog dlg({}, this);
+                dlg.exec();
+            }
         } else {
             statusBar()->showMessage(
                 QString(langue_->get("status.component_selected") + " : %1 (%2)")

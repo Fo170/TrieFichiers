@@ -98,6 +98,73 @@ void FolderCleaner::clean(const QStringList& paths,
     emit finished(totalEmpty, totalThumbs, totalDirs);
 }
 
+void FolderCleaner::analyzeStrip(const QStringList& paths,
+                                  const QString& extension) {
+    running_ = true;
+    int total = 0;
+
+    for (const QString& path : paths) {
+        emit stripProgress(QString("Analyse : %1").arg(path));
+        walkForStrip(path, extension, total, true);
+    }
+
+    running_ = false;
+    emit stripAnalyzed(total);
+}
+
+void FolderCleaner::applyStrip(const QStringList& paths,
+                                const QString& extension) {
+    running_ = true;
+    int total = 0, errors = 0;
+
+    for (const QString& path : paths) {
+        QDir dir(path);
+        if (!dir.exists()) continue;
+        int before = total;
+        walkForStrip(path, extension, total, false);
+        int done = total - before;
+        if (done > 0 || errors > 0)
+            emit stripProgress(QString("  %1 renommes, %2 erreurs").arg(done).arg(errors));
+    }
+
+    running_ = false;
+    emit stripFinished(total, errors);
+}
+
+void FolderCleaner::walkForStrip(const QString& root, const QString& ext,
+                                  int& count, bool preview) {
+    emit stripProgress(root);
+
+    QDir dir(root);
+    QFileInfoList entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
+
+    for (const QFileInfo& info : entries) {
+        QCoreApplication::processEvents();
+
+        if (info.isDir()) {
+            walkForStrip(info.absoluteFilePath(), ext, count, preview);
+        } else if (info.isFile()) {
+            QString name = info.fileName();
+            if (name.endsWith(ext, Qt::CaseInsensitive)) {
+                QString newName = name.left(name.length() - ext.length());
+                if (preview) {
+                    emit stripProgress(QString("  %1 -> %2").arg(name, newName));
+                    ++count;
+                } else {
+                    QDir parent = info.absoluteDir();
+                    if (parent.rename(info.absoluteFilePath(),
+                                      parent.absolutePath() + "/" + newName)) {
+                        emit stripProgress(QString("  %1 -> %2").arg(name, newName));
+                        ++count;
+                    } else {
+                        emit stripProgress(QString("  ERREUR: %1").arg(name));
+                    }
+                }
+            }
+        }
+    }
+}
+
 int FolderCleaner::deleteEmptyFiles(const QString& path) {
     int count = 0;
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
