@@ -21,11 +21,11 @@ toolbar.save=💾 Sauvegarder
 status.ready=Prêt
 status.loaded=Projet chargé
 status.saved=Projet sauvegardé
-status.up_to_date=Application à jour (v%s)
+status.up_to_date=Application à jour (v%1)
 status.update_check=Vérification des mises à jour...
 status.update_checking=Vérification des mises à jour en cours...
 status.update_failed=Vérification échouée
-status.update_available=Mise à jour %s disponible
+status.update_available=Mise à jour %1 disponible
 status.component_selected=Composant sélectionné
 
 central.placeholder=Ouvrez ou créez un projet pour commencer
@@ -33,10 +33,10 @@ dock.toolbox=Boîte à outils
 toolbox.title=Boîte à outils
 
 dialog.about.title=À propos
-dialog.about.text=<h3>%s</h3><p>Version %s</p><p>Application Qt6 multi-plateforme.</p>
+dialog.about.text=<h3>%1</h3><p>Version %2</p><p>Application Qt6 multi-plateforme.</p>
 
 dialog.update.title=Mise à jour disponible
-dialog.update.message=Une nouvelle version est disponible : %s\n\nVersion actuelle : %s\n\n%s\n\nVoulez-vous télécharger la mise à jour ?
+dialog.update.message=Une nouvelle version est disponible : %1\n\nVersion actuelle : %2\n\n%3\n\nVoulez-vous télécharger la mise à jour ?
 dialog.update.yes=Télécharger
 dialog.update.no=Plus tard
 
