@@ -10,6 +10,8 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 #include <QFont>
+#include <QTextCursor>
+#include <QScrollBar>
 
 CleanupDialog::CleanupDialog(const QStringList& initialPaths,
                              QWidget* parent)
@@ -141,6 +143,10 @@ void CleanupDialog::runAnalyze() {
 
 void CleanupDialog::onAnalysisProgress(const QString& message) {
     logEdit_->append(message);
+    logEdit_->moveCursor(QTextCursor::End);
+    logEdit_->verticalScrollBar()->setValue(
+        logEdit_->verticalScrollBar()->maximum());
+    logEdit_->repaint();
     QCoreApplication::processEvents();
 }
 
