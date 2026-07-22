@@ -45,46 +45,32 @@ void FolderCleaner::walkForAnalysis(const QString& root,
                                      int& totalDirs) {
     emit analysisProgress(root);
 
-    if (checkEmptyFiles) {
-        QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-            if (it.fileInfo().size() == 0) {
-                emit analysisProgress(QString("  [vide] %1").arg(it.fileInfo().absoluteFilePath()));
+    QDir dir(root);
+    QFileInfoList entries = dir.entryInfoList(QDir::NoDotAndDotDot | QDir::AllEntries);
+
+    for (const QFileInfo& info : entries) {
+        QCoreApplication::processEvents();
+
+        if (info.isDir()) {
+            walkForAnalysis(info.absoluteFilePath(),
+                            checkEmptyFiles, checkThumbsDb, checkEmptyDirs,
+                            totalEmpty, totalThumbs, totalDirs);
+            if (checkEmptyDirs) {
+                QDir sub(info.absoluteFilePath());
+                if (sub.entryList(QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty()) {
+                    emit analysisProgress(QString("  [dossier vide] %1").arg(info.absoluteFilePath()));
+                    ++totalDirs;
+                }
+            }
+        } else if (info.isFile()) {
+            if (checkEmptyFiles && info.size() == 0) {
+                emit analysisProgress(QString("  [vide] %1").arg(info.absoluteFilePath()));
                 ++totalEmpty;
             }
-            QCoreApplication::processEvents();
-        }
-    }
-
-    if (checkThumbsDb) {
-        QDirIterator it(root, QStringList{"Thumbs.db"}, QDir::Files,
-                        QDirIterator::Subdirectories);
-        while (it.hasNext()) {
-            it.next();
-            emit analysisProgress(QString("  [Thumbs.db] %1").arg(it.fileInfo().absoluteFilePath()));
-            ++totalThumbs;
-            QCoreApplication::processEvents();
-        }
-    }
-
-    if (checkEmptyDirs) {
-        QDirIterator it(root, QDir::Dirs | QDir::NoDotAndDotDot,
-                        QDirIterator::Subdirectories);
-        QStringList dirs;
-        while (it.hasNext()) {
-            it.next();
-            dirs.prepend(it.fileInfo().absoluteFilePath());
-        }
-
-        for (const QString& dirPath : dirs) {
-            QDir dir(dirPath);
-            if (!dir.exists()) continue;
-            if (dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty()) {
-                emit analysisProgress(QString("  [dossier vide] %1").arg(dirPath));
-                ++totalDirs;
+            if (checkThumbsDb && info.fileName() == "Thumbs.db") {
+                emit analysisProgress(QString("  [Thumbs.db] %1").arg(info.absoluteFilePath()));
+                ++totalThumbs;
             }
-            QCoreApplication::processEvents();
         }
     }
 }
