@@ -37,6 +37,7 @@ bool LangueManager::load(const QString& languageCode) {
 
         QString key = line.left(sep).trimmed();
         QString value = line.mid(sep + 1).trimmed();
+        value.replace("\\n", "\n");
         newTranslations[key] = value;
     }
 
