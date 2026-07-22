@@ -1,5 +1,5 @@
 #include <QApplication>
-#include <QFontDatabase>
+#include <QFont>
 #include <QIcon>
 #include "AppConfig.hpp"
 #include "MainWindow.hpp"
@@ -8,7 +8,13 @@ int main(int argc, char* argv[]) {
     QApplication app(argc, argv);
     app.setApplicationName(QStringLiteral(APP_NAME));
 
-    QFontDatabase::addApplicationFont("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf");
+    QFont def = app.font();
+    QFont emojiFont = def;
+    emojiFont.setFamilies({"Noto Sans", "Noto Color Emoji"});
+    app.setFont(emojiFont, "QMenu");
+    app.setFont(emojiFont, "QMenuBar");
+    app.setFont(emojiFont, "QToolBar");
+    app.setFont(emojiFont, "QTreeWidget");
 
     QIcon icone;
     icone.addFile(":/ico/app-256.png", QSize(256, 256));

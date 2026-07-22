@@ -48,8 +48,8 @@ CleanupDialog::CleanupDialog(const QStringList& initialPaths,
     mainLayout->addWidget(chkEmptyDirs_);
 
     auto* actionLayout = new QHBoxLayout;
-    btnAnalyze_ = new QPushButton("🔍 Analyser");
-    btnClean_ = new QPushButton("🗑️ Nettoyer");
+    btnAnalyze_ = new QPushButton("Analyser");
+    btnClean_ = new QPushButton("Nettoyer");
     btnClean_->setEnabled(false);
     btnClose_ = new QPushButton("Fermer");
     actionLayout->addWidget(btnAnalyze_);
