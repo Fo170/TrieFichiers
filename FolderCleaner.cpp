@@ -25,22 +25,68 @@ void FolderCleaner::analyze(const QStringList& paths,
             emit analysisProgress(QString("Ignore (introuvable) : %1").arg(path));
             continue;
         }
+        walkForAnalysis(path, checkEmptyFiles, checkThumbsDb,
+                        checkEmptyDirs, totalEmpty, totalThumbs, totalDirs);
 
-        emit analysisProgress(QString("Analyse : %1").arg(path));
-
-        if (checkEmptyFiles)
-            totalEmpty += countEmptyFiles(path);
-        if (checkThumbsDb)
-            totalThumbs += countThumbsDb(path);
-        if (checkEmptyDirs)
-            totalDirs += countEmptyDirs(path);
-
-        emit analysisProgress(QString("  Fichiers vides : %1 | Thumbs.db : %2 | Dossiers vides : %3")
+        emit analysisProgress(QString("  => Fichiers vides : %1 | Thumbs.db : %2 | Dossiers vides : %3")
             .arg(totalEmpty).arg(totalThumbs).arg(totalDirs));
     }
 
     running_ = false;
     emit analysisFinished(totalEmpty, totalThumbs, totalDirs);
+}
+
+void FolderCleaner::walkForAnalysis(const QString& root,
+                                     bool checkEmptyFiles,
+                                     bool checkThumbsDb,
+                                     bool checkEmptyDirs,
+                                     int& totalEmpty,
+                                     int& totalThumbs,
+                                     int& totalDirs) {
+    emit analysisProgress(root);
+
+    if (checkEmptyFiles) {
+        QDirIterator it(root, QDir::Files, QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            if (it.fileInfo().size() == 0) {
+                emit analysisProgress(QString("  [vide] %1").arg(it.fileInfo().absoluteFilePath()));
+                ++totalEmpty;
+            }
+            QCoreApplication::processEvents();
+        }
+    }
+
+    if (checkThumbsDb) {
+        QDirIterator it(root, QStringList{"Thumbs.db"}, QDir::Files,
+                        QDirIterator::Subdirectories);
+        while (it.hasNext()) {
+            it.next();
+            emit analysisProgress(QString("  [Thumbs.db] %1").arg(it.fileInfo().absoluteFilePath()));
+            ++totalThumbs;
+            QCoreApplication::processEvents();
+        }
+    }
+
+    if (checkEmptyDirs) {
+        QDirIterator it(root, QDir::Dirs | QDir::NoDotAndDotDot,
+                        QDirIterator::Subdirectories);
+        QStringList dirs;
+        while (it.hasNext()) {
+            it.next();
+            dirs.prepend(it.fileInfo().absoluteFilePath());
+        }
+
+        for (const QString& dirPath : dirs) {
+            QDir dir(dirPath);
+            if (!dir.exists()) continue;
+            if (dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty()) {
+                emit analysisProgress(QString("  [dossier vide] %1").arg(dirPath));
+                ++totalDirs;
+            }
+            QCoreApplication::processEvents();
+        }
+    }
 }
 
 void FolderCleaner::clean(const QStringList& paths,
@@ -64,51 +110,6 @@ void FolderCleaner::clean(const QStringList& paths,
 
     running_ = false;
     emit finished(totalEmpty, totalThumbs, totalDirs);
-}
-
-int FolderCleaner::countEmptyFiles(const QString& path) {
-    int count = 0;
-    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
-        if (it.fileInfo().size() == 0)
-            ++count;
-        QCoreApplication::processEvents();
-    }
-    return count;
-}
-
-int FolderCleaner::countThumbsDb(const QString& path) {
-    int count = 0;
-    QDirIterator it(path, QStringList{"Thumbs.db"}, QDir::Files,
-                    QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        it.next();
-        ++count;
-        QCoreApplication::processEvents();
-    }
-    return count;
-}
-
-int FolderCleaner::countEmptyDirs(const QString& path) {
-    int count = 0;
-    QDirIterator it(path, QDir::Dirs | QDir::NoDotAndDotDot,
-                    QDirIterator::Subdirectories);
-
-    QStringList dirs;
-    while (it.hasNext()) {
-        it.next();
-        dirs.prepend(it.fileInfo().absoluteFilePath());
-    }
-
-    for (const QString& dirPath : dirs) {
-        QDir dir(dirPath);
-        if (!dir.exists()) continue;
-        if (dir.entryList(QDir::AllEntries | QDir::NoDotAndDotDot).isEmpty())
-            ++count;
-        QCoreApplication::processEvents();
-    }
-    return count;
 }
 
 int FolderCleaner::deleteEmptyFiles(const QString& path) {

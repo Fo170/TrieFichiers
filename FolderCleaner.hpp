@@ -30,9 +30,13 @@ signals:
 private:
     bool running_ = false;
 
-    int countEmptyFiles(const QString& path);
-    int countThumbsDb(const QString& path);
-    int countEmptyDirs(const QString& path);
+    void walkForAnalysis(const QString& root,
+                         bool checkEmptyFiles,
+                         bool checkThumbsDb,
+                         bool checkEmptyDirs,
+                         int& totalEmpty,
+                         int& totalThumbs,
+                         int& totalDirs);
 
     int deleteEmptyFiles(const QString& path);
     int deleteThumbsDb(const QString& path);
