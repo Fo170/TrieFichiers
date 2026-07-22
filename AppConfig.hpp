@@ -9,7 +9,7 @@
 // ── Version de l'application ─────────────────────────────────────────────
 // Modifier ici à chaque release (format X.Y.Z)
 #ifndef APP_VERSION
-#define APP_VERSION "0.1.0"
+#define APP_VERSION "1.0.1"
 #endif
 
 // ── URLs ─────────────────────────────────────────────────────────────────
