@@ -6,10 +6,10 @@ Application Qt6 de nettoyage et tri de fichiers — multi-plateforme (Windows + 
 
 - **Nettoyage de dossiers** : analyse + suppression des fichiers vides, Thumbs.db, dossiers vides
 - **Analyse préalable** : voir le nombre d'éléments avant de les supprimer
+- **Suppression d'une extension spécifique** : renomme les fichiers en leur retirant une extension ciblée (ex: `.torrent` → sans extension)
+- **Déduplicateur d'extensions** : corrige les fichiers avec extensions dupliquées (`.torrent.torrent` → `.torrent`) — v1.0.3
 - **Multi-langue** : Français / Anglais, détection automatique
 - **Vérification de mises à jour** en ligne via GitHub
-- **Barre d'outils** avec outils de nettoyage
-- **Déduplicateur d'extensions** : corrige les fichiers avec extensions dupliquées (`.torrent.torrent` → `.torrent`) — v1.0.3
 
 ## Structure
 
@@ -20,6 +20,8 @@ TrieFichiers/
 ├── AppConfig.hpp
 ├── MainWindow.hpp/.cpp
 ├── ComponentToolbox.hpp/.cpp
+├── DuplicateExtCleaner.hpp/.cpp
+├── StripDialog.hpp/.cpp
 ├── FolderCleaner.hpp/.cpp
 ├── CleanupDialog.hpp/.cpp
 ├── UpdateChecker.hpp/.cpp
@@ -79,5 +81,11 @@ windeployqt windows/TrieFichiers.exe
 
 | Document | Contenu |
 |---|---|
-| `README.md` | Guide |
+| `README.md` | Présentation & compilation |
+| `guide_implantation_fonctionnalites.md` | Guide d'ajout de fonctionnalités |
+| `application_multiplatforme.md` | Déploiement Linux / Windows |
+| `comment_avoir_une_icone.md` | Intégration des icônes |
+| `langues.md` | Gestion des traductions |
+| `verification_mise_a_jour.md` | Mise à jour automatique |
+| `Qt GUI — bibliothèques et technologies utilisées.md` | Dépendances Qt |
 
