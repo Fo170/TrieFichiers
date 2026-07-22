@@ -50,4 +50,6 @@ void ComponentToolbox::populate_categories() {
          {{"type", "cleanup"}, {"tool", "clean_all"}});
     item(nettoyage, "Supprimer une extension",
          {{"type", "cleanup"}, {"tool", "strip_extension"}});
+    item(nettoyage, "Déduplicateur d'extensions",
+         {{"type", "cleanup"}, {"tool", "dedup_extension"}});
 }

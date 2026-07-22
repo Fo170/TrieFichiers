@@ -35,6 +35,19 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     dock_toolbox_->setMaximumWidth(260);
     addDockWidget(Qt::LeftDockWidgetArea, dock_toolbox_);
 
+    duplicate_cleaner_ = new DuplicateExtCleaner;
+    dock_cleaner_ = new QDockWidget(this);
+    dock_cleaner_->setWidget(duplicate_cleaner_);
+    dock_cleaner_->setMinimumWidth(300);
+    dock_cleaner_->setMaximumWidth(500);
+    addDockWidget(Qt::RightDockWidgetArea, dock_cleaner_);
+    dock_cleaner_->hide();
+
+    connect(duplicate_cleaner_, &DuplicateExtCleaner::status_message,
+            this, [this](const QString& msg) {
+        statusBar()->showMessage(msg);
+    });
+
     central_label_ = new QLabel;
     central_label_->setAlignment(Qt::AlignCenter);
     central_label_->setStyleSheet("color: #888; font-size: 14px;");
@@ -46,6 +59,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
             if (data.value("tool") == "strip_extension") {
                 StripDialog dlg({}, this);
                 dlg.exec();
+            } else if (data.value("tool") == "dedup_extension") {
+                dock_cleaner_->setVisible(!dock_cleaner_->isVisible());
             } else {
                 CleanupDialog dlg({}, this);
                 dlg.exec();

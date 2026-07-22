@@ -7,8 +7,10 @@
 #include "ComponentToolbox.hpp"
 #include "UpdateChecker.hpp"
 #include "LangueManager.hpp"
+#include "DuplicateExtCleaner.hpp"
 
 class QAction;
+class QDockWidget;
 class QLabel;
 
 class MainWindow : public QMainWindow {
@@ -44,6 +46,8 @@ private:
     Project project_;
     ComponentToolbox* toolbox_;
     QDockWidget* dock_toolbox_;
+    DuplicateExtCleaner* duplicate_cleaner_;
+    QDockWidget* dock_cleaner_;
     UpdateChecker* update_checker_;
     LangueManager* langue_;
     QLabel* central_label_;

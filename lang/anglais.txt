@@ -46,6 +46,7 @@ dialog.error.save=Unable to save project file.
 toolbox.category.cleanup=Cleanup
 toolbox.clean_all=Delete empty files
 toolbox.strip_extension=Strip extension
+toolbox.dedup_extension=Extension deduplicator
 
 dialog.cleanup.title=Folder cleanup
 dialog.cleanup.paths=Folder(s) to clean:

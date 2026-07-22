@@ -9,6 +9,7 @@ Application Qt6 de nettoyage et tri de fichiers — multi-plateforme (Windows + 
 - **Multi-langue** : Français / Anglais, détection automatique
 - **Vérification de mises à jour** en ligne via GitHub
 - **Barre d'outils** avec outils de nettoyage
+- **Déduplicateur d'extensions** : corrige les fichiers avec extensions dupliquées (`.torrent.torrent` → `.torrent`) — v1.0.3
 
 ## Structure
 

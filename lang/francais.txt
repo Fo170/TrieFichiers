@@ -46,6 +46,7 @@ dialog.error.save=Impossible de sauvegarder le fichier projet.
 toolbox.category.cleanup=Nettoyage
 toolbox.clean_all=Supprimer fichiers vides
 toolbox.strip_extension=Supprimer une extension
+toolbox.dedup_extension=Déduplicateur d'extensions
 
 dialog.cleanup.title=Nettoyage de dossier
 dialog.cleanup.paths=Dossier(s) à nettoyer :
