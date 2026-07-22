@@ -30,6 +30,16 @@ ui_*.h
 moc_*.cpp
 moc_*.h
 
+# Docs / legacy
+fonctions_a_ajouter/
+AGENTS.md
+application_multiplatforme.md
+comment_avoir_une_icone.md
+guide_implantation_fonctionnalites.md
+langues.md
+Qt GUI — bibliothèques et technologies utilisées.md
+verification_mise_a_jour.md
+
 # IDE
 .vscode/
 .qt/
