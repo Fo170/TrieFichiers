@@ -45,15 +45,7 @@ void ComponentToolbox::populate_categories() {
         i->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     };
 
-    auto* entrees = groupe("📡 Entrées");
-    item(entrees, "📡 Capteur",        {{"type", "capteur"}, {"nom", "Capteur"}});
-    item(entrees, "💡 Interrupteur",   {{"type", "interrupteur"}, {"nom", "Interrupteur"}});
-
-    auto* traitement = groupe("⚙️ Traitement");
-    item(traitement, "🖥️ Processeur",  {{"type", "processeur"}, {"nom", "Processeur"}});
-    item(traitement, "🎯 Filtre",             {{"type", "filtre"}, {"nom", "Filtre"}});
-
-    auto* sorties = groupe("💠 Sorties");
-    item(sorties, "📊 Afficheur",      {{"type", "afficheur"}, {"nom", "Afficheur"}});
-    item(sorties, "🤖 Actionneur",     {{"type", "actionneur"}, {"nom", "Actionneur"}});
+    auto* nettoyage = groupe("🧹 Nettoyage");
+    item(nettoyage, "Supprimer fichiers vides",
+         {{"type", "cleanup"}, {"tool", "clean_all"}});
 }

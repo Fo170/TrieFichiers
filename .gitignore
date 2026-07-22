@@ -2,6 +2,9 @@
 windows/
 linux/
 
+# Logs
+*.log
+
 # Generated files
 app_icon.o
 *.exe

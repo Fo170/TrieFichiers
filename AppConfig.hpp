@@ -4,25 +4,25 @@
 #include <QString>
 
 // ── Nom de l'application ─────────────────────────────────────────────────
-#define APP_NAME "ApplicationVide"
+#define APP_NAME "TrieFichiers"
 
 // ── Version de l'application ─────────────────────────────────────────────
 // Modifier ici à chaque release (format X.Y.Z)
 #ifndef APP_VERSION
-#define APP_VERSION "1.0.0"
+#define APP_VERSION "0.1.0"
 #endif
 
 // ── URLs ─────────────────────────────────────────────────────────────────
 // URL du fichier version.json pour la vérification de mise à jour
 // Doit pointer vers un fichier JSON avec les champs : version, url, notes
-#define UPDATE_CHECK_URL "https://raw.githubusercontent.com/Fo170/ApplicationVide/main/version.json"
+#define UPDATE_CHECK_URL "https://raw.githubusercontent.com/Fo170/TrieFichiers/main/version.json"
 
 // URL du dépôt GitHub (page d'accueil, releases, etc.)
-#define APP_HOMEPAGE_URL "https://github.com/Fo170/ApplicationVide"
+#define APP_HOMEPAGE_URL "https://github.com/Fo170/TrieFichiers"
 
 // URL de base pour les fichiers de langue (hébergés sur GitHub raw)
 // L'application peut télécharger un fichier .txt manquant via cette URL
-#define LANG_BASE_URL "https://raw.githubusercontent.com/Fo170/ApplicationVide/main/lang/"
+#define LANG_BASE_URL "https://raw.githubusercontent.com/Fo170/TrieFichiers/main/lang/"
 
 // ── Icônes ───────────────────────────────────────────────────────────────
 // Toutes les icônes sont dans le dossier "ico/" à la racine du projet.

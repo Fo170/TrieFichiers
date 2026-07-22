@@ -1,5 +1,5 @@
-# Français — ApplicationVide
-app.name=ApplicationVide
+# Français — TrieFichiers
+app.name=TrieFichiers
 
 menu.file=&Fichier
 menu.file.load=📂 Charger un projet
@@ -7,11 +7,11 @@ menu.file.save=💾 Sauvegarder le projet
 menu.file.quit=❌ Quitter
 
 menu.tools=&Outils
-menu.tools.toolbox=🧰 Boîte à outils
+menu.tools.toolbox=🧰 Boite a outils
 
 menu.help=&?
-menu.help.check_update=🔄 Vérifier les mises à jour
-menu.help.about=ℹ️ À propos
+menu.help.check_update=🔄 Verifier les mises a jour
+menu.help.about=ℹ️ A propos
 
 menu.language=&Langue
 
@@ -42,3 +42,21 @@ dialog.update.no=Plus tard
 
 dialog.error.load=Impossible de charger le fichier projet.
 dialog.error.save=Impossible de sauvegarder le fichier projet.
+
+toolbox.category.cleanup=Nettoyage
+toolbox.clean_all=Supprimer fichiers vides
+
+dialog.cleanup.title=Nettoyage de dossier
+dialog.cleanup.paths=Dossier(s) à nettoyer :
+dialog.cleanup.add=Ajouter
+dialog.cleanup.remove=Supprimer
+dialog.cleanup.empty_files=Supprimer les fichiers vides (0 octet)
+dialog.cleanup.thumbs_db=Supprimer Thumbs.db
+dialog.cleanup.empty_dirs=Supprimer les dossiers vides
+dialog.cleanup.run=Nettoyer
+dialog.cleanup.running=Nettoyage en cours...
+dialog.cleanup.done=Nettoyage terminé
+dialog.cleanup.no_paths=Ajoutez au moins un dossier à nettoyer.
+dialog.cleanup.no_op=Cochez au moins une opération à effectuer.
+dialog.cleanup.none_found=Aucun élément à supprimer trouvé.
+dialog.cleanup.summary=Supprimé

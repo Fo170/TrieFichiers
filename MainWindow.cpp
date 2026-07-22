@@ -1,5 +1,6 @@
 #include "MainWindow.hpp"
 #include "AppConfig.hpp"
+#include "CleanupDialog.hpp"
 #include <QMenuBar>
 #include <QMenu>
 #include <QAction>
@@ -40,10 +41,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     connect(toolbox_, &ComponentToolbox::component_selected,
             this, [this](const QVariantMap& data) {
-        statusBar()->showMessage(
-            QString(langue_->get("status.component_selected") + " : %1 (%2)")
-                .arg(data.value("nom").toString())
-                .arg(data.value("type").toString()));
+        if (data.value("type") == "cleanup") {
+            CleanupDialog dlg({}, this);
+            dlg.exec();
+        } else {
+            statusBar()->showMessage(
+                QString(langue_->get("status.component_selected") + " : %1 (%2)")
+                    .arg(data.value("nom").toString())
+                    .arg(data.value("type").toString()));
+        }
     });
 
     update_checker_ = new UpdateChecker(

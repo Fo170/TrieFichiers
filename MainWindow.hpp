@@ -54,14 +54,14 @@ private:
     QMenu* menu_aide_;
     QMenu* menu_langue_;
 
-    QAction* a_charger_;
-    QAction* a_sauver_;
-    QAction* a_quitter_;
-    QAction* a_toolbox_;
-    QAction* a_update_;
-    QAction* a_about_;
-    QAction* a_tb_charger_;
-    QAction* a_tb_sauver_;
+    QAction* a_charger_ = nullptr;
+    QAction* a_sauver_ = nullptr;
+    QAction* a_quitter_ = nullptr;
+    QAction* a_toolbox_ = nullptr;
+    QAction* a_update_ = nullptr;
+    QAction* a_about_ = nullptr;
+    QAction* a_tb_charger_ = nullptr;
+    QAction* a_tb_sauver_ = nullptr;
 };
 
 #endif

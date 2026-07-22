@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(ApplicationVide VERSION 1.0.0 LANGUAGES CXX)
+project(TrieFichiers VERSION 0.1.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -11,26 +11,34 @@ find_package(Qt6 REQUIRED COMPONENTS Widgets Network)
 file(COPY ico/app.ico DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/ico)
 file(COPY lang/ DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/lang)
 
-# Pre-compile .rc to .o at configure time (path workaround for windres)
-set(WINDRES "C:/Qt/Tools/mingw1310_64/bin/windres.exe")
-set(RC_OUT "${CMAKE_CURRENT_BINARY_DIR}/app_icon.o")
-if(NOT EXISTS "${RC_OUT}")
-    execute_process(
-        COMMAND ${WINDRES} -i "${CMAKE_CURRENT_SOURCE_DIR}/app.rc" -o "${RC_OUT}"
+if(WIN32)
+    if(NOT CMAKE_RC_COMPILER)
+        set(CMAKE_RC_COMPILER windres)
+    endif()
+    set(RC_OUT "${CMAKE_CURRENT_BINARY_DIR}/app_icon.o")
+    add_custom_command(
+        OUTPUT ${RC_OUT}
+        COMMAND ${CMAKE_RC_COMPILER}
+                -i "${CMAKE_CURRENT_SOURCE_DIR}/app.rc"
+                -o ${RC_OUT}
+        DEPENDS app.rc
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     )
+    set(RC_FILES ${RC_OUT})
 endif()
 
-add_executable(ApplicationVide
+add_executable(TrieFichiers
     main.cpp
     MainWindow.cpp
     Project.cpp
     ComponentToolbox.cpp
     UpdateChecker.cpp
     LangueManager.cpp
+    FolderCleaner.cpp
+    CleanupDialog.cpp
     resources.qrc
-    ${RC_OUT}
+    ${RC_FILES}
 )
 
-target_link_libraries(ApplicationVide PRIVATE Qt6::Widgets Qt6::Network)
-target_include_directories(ApplicationVide PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(TrieFichiers PRIVATE Qt6::Widgets Qt6::Network)
+target_include_directories(TrieFichiers PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

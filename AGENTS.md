@@ -3,26 +3,29 @@
 ## Build
 
 ```bash
-# Windows (MinGW) — tested Qt 6.11.0 / MinGW 13.10
-cmake -S . -B windows -G "MinGW Makefiles" ^
-  -DCMAKE_PREFIX_PATH=C:/Qt/6.x.x/mingw_64 ^
-  -DCMAKE_CXX_COMPILER=C:/Qt/Tools/mingwXXX_64/bin/g++.exe ^
-  -DCMAKE_MAKE_PROGRAM=C:/Qt/Tools/mingwXXX_64/bin/mingw32-make.exe
+# Linux — system Qt6
+cmake -S . -B linux -DCMAKE_PREFIX_PATH=/usr -DCMAKE_BUILD_TYPE=Release
+cmake --build linux
+
+# Windows (cross-compilation from Linux)
+cmake -S . -B windows \
+  -G "Unix Makefiles" \
+  -DCMAKE_TOOLCHAIN_FILE=toolchain-mingw64.cmake \
+  -DCMAKE_PREFIX_PATH=/home/administrateur/Qt/6.4.2/mingw_64 \
+  -DQT_HOST_PATH=/usr \
+  -DCMAKE_BUILD_TYPE=Release
 cmake --build windows
 
-# Windows (MSVC)
-cmake -S . -B windows -G "Visual Studio 17 2022" -DCMAKE_PREFIX_PATH=C:/Qt/6.x.x/msvc2022_64
-cmake --build windows --config Release
-
-# Linux
-cmake -S . -B linux -DCMAKE_PREFIX_PATH=/opt/Qt/6.x.x/gcc_64
-cmake --build linux
+# Windows native (MinGW)
+cmake -S . -B windows -G "MinGW Makefiles" ^
+  -DCMAKE_PREFIX_PATH=C:/Qt/6.x.x/mingw_64
+cmake --build windows
 ```
 
 ## Deploy (Windows)
 
 ```bash
-windeployqt windows/ApplicationVide.exe
+windeployqt windows/TrieFichiers.exe
 ```
 
 ## Conventions
@@ -35,11 +38,12 @@ windeployqt windows/ApplicationVide.exe
 - Icons: PNG in `ico/` via `resources.qrc` (prefixed `:/ico/`); PE icon via `app.rc` → `windres`
 - Settings: `application.ini` next to executable, auto-regenerated if missing
 - No test framework configured
+- Emoji: `main.cpp` sets `Noto Color Emoji` as fallback font
 
 ## Build quirks
 
-- `app.rc` is pre-compiled with `windres` at CMake **configure** time (`CMakeLists.txt:14-22`). If `app_icon.o` is missing, reconfigure with `cmake`.
-- `windows/` and `linux/` are gitignored build output directories; `lang/` and `ico/app.ico` are copied to the build dir at configure time.
+- Cross-compilation: `toolchain-mingw64.cmake` + `QT_HOST_PATH=/usr` for host Qt tools
+- `windows/` and `linux/` are gitignored build output directories; `lang/` and `ico/app.ico` are copied to the build dir at configure time
 
 ## Key files
 
@@ -49,9 +53,12 @@ windeployqt windows/ApplicationVide.exe
 | `MainWindow.hpp/.cpp` | Main window: menus, toolbar, dock, closeEvent, settings |
 | `LangueManager.hpp/.cpp` | Multi-language: load `.txt`, download from GitHub, system detect |
 | `UpdateChecker.hpp/.cpp` | Online version check via HTTP + JSON + QVersionNumber (10s timeout) |
-| `ComponentToolbox.hpp/.cpp` | Component toolbox tree widget with hardcoded categories |
+| `ComponentToolbox.hpp/.cpp` | Toolbox tree widget (cleanup tools category) |
+| `FolderCleaner.hpp/.cpp` | Core logic: count/delete empty files, Thumbs.db, empty dirs |
+| `CleanupDialog.hpp/.cpp` | Dialog: analyse + clean in two steps |
 | `Project.hpp/.cpp` | JSON project load/save (`version`, `name`, `components[]`) |
 | `version.json` | Remote version manifest (hosted on GitHub raw) |
+| `toolchain-mingw64.cmake` | CMake toolchain for Windows cross-compilation |
 | `guide_implantation_fonctionnalites.md` | Full how-to: 6 Qt features + 20 pitfall sections (emojis, SSL, debug, signals, QSS, deploy) |
 | `Qt GUI — bibliothèques et technologies utilisées.md` | All Qt classes & technologies by category |
 | `langues.md` | Guide: adding/downloading languages |
@@ -64,4 +71,4 @@ windeployqt windows/ApplicationVide.exe
 - Language auto-detect: system locale → `francais`/`anglais`, falls back to `anglais`
 - Missing language files auto-downloaded from `LANG_BASE_URL` (GitHub raw)
 - `application.ini` auto-recreated if deleted; saves `langue` and `geometry`
-- Tested on Windows (MinGW), not yet on Linux
+- Tested on Linux (Ubuntu 24.04, Qt 6.4.2) and cross-compiled for Windows (MinGW)

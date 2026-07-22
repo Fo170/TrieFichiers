@@ -1,5 +1,5 @@
-# English — ApplicationVide
-app.name=ApplicationVide
+# English — TrieFichiers
+app.name=TrieFichiers
 
 menu.file=&File
 menu.file.load=📂 Load project
@@ -42,3 +42,21 @@ dialog.update.no=Later
 
 dialog.error.load=Unable to load project file.
 dialog.error.save=Unable to save project file.
+
+toolbox.category.cleanup=Cleanup
+toolbox.clean_all=Delete empty files
+
+dialog.cleanup.title=Folder cleanup
+dialog.cleanup.paths=Folder(s) to clean:
+dialog.cleanup.add=Add
+dialog.cleanup.remove=Remove
+dialog.cleanup.empty_files=Delete empty files (0 bytes)
+dialog.cleanup.thumbs_db=Delete Thumbs.db
+dialog.cleanup.empty_dirs=Delete empty folders
+dialog.cleanup.run=Clean
+dialog.cleanup.running=Cleaning in progress...
+dialog.cleanup.done=Cleaning finished
+dialog.cleanup.no_paths=Add at least one folder to clean.
+dialog.cleanup.no_op=Check at least one operation to perform.
+dialog.cleanup.none_found=No items to delete found.
+dialog.cleanup.summary=Deleted
