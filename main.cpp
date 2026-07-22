@@ -17,6 +17,7 @@ int main(int argc, char* argv[]) {
     app.setFont(emojiFont, "QTreeWidget");
 
     QIcon icone;
+    icone.addFile(":/ico/AZ.png", QSize(128, 128));
     icone.addFile(":/ico/app-256.png", QSize(256, 256));
     icone.addFile(":/ico/app-128.png", QSize(128, 128));
     icone.addFile(":/ico/app-64.png", QSize(64, 64));
