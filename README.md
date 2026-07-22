@@ -30,7 +30,7 @@ TrieFichiers/
 ├── toolchain-mingw64.cmake
 ├── ico/
 ├── lang/
-└── AGENTS.md
+└── README.md
 ```
 
 ## Prérequis
@@ -78,6 +78,5 @@ windeployqt windows/TrieFichiers.exe
 
 | Document | Contenu |
 |---|---|
-| `AGENTS.md` | Guide LLM (OpenCode) |
-| `guide_implantation_fonctionnalites.md` | Guide technique Qt |
-| `langues.md` | Ajouter une langue |
+| `README.md` | Guide |
+
