@@ -1,4 +1,11 @@
 # English — TrieFichiers
+
+project.title=Project
+project.name_label=Name
+project.path_label=Path
+project.no_project=No project loaded
+project.default_name=New project
+toolbox.project=Project
 app.name=TrieFichiers
 
 menu.file=&File

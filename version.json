@@ -1,5 +1,5 @@
 {
-    "version": "1.0.3",
+    "version": "1.0.4",
     "url": "https://github.com/Fo170/TrieFichiers",
-    "notes": "Ajout du déduplicateur d'extensions (corrige les fichiers .torrent.torrent → .torrent)"
+    "notes": "Dialogue de résolution de conflits, recherche insensible à la casse, refonte de la zone centrale avec pages Projet/Outils, feedback visuel de la recherche"
 }

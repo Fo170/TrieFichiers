@@ -1,4 +1,11 @@
 # Français — TrieFichiers
+
+project.title=Projet
+project.name_label=Nom
+project.path_label=Chemin
+project.no_project=Aucun projet chargé
+project.default_name=Nouveau projet
+toolbox.project=Projet
 app.name=TrieFichiers
 
 menu.file=&Fichier

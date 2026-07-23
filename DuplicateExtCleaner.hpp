@@ -6,6 +6,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QLabel>
+#include "ConflictResolutionDialog.hpp"
 
 class DuplicateExtCleaner : public QWidget {
     Q_OBJECT
@@ -28,6 +29,7 @@ private:
     QPushButton* btn_fix_;
     QTableWidget* table_;
     QLabel* count_label_;
+    ConflictResolutionDialog::Result global_choice_ = ConflictResolutionDialog::Skip;
 };
 
 #endif

@@ -8,6 +8,7 @@
 #include <QRegularExpression>
 #include <QFile>
 #include <QDir>
+#include <QCoreApplication>
 
 DuplicateExtCleaner::DuplicateExtCleaner(QWidget* parent)
     : QWidget(parent)
@@ -42,8 +43,10 @@ DuplicateExtCleaner::DuplicateExtCleaner(QWidget* parent)
         QStringLiteral("Statut")
     });
     table_->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-    table_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    table_->setColumnWidth(1, 200);
+    table_->setColumnWidth(2, 100);
+    table_->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Interactive);
+    table_->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Interactive);
     table_->setSelectionBehavior(QAbstractItemView::SelectRows);
     table_->setEditTriggers(QAbstractItemView::NoEditTriggers);
     main_layout->addWidget(table_);
@@ -81,8 +84,13 @@ void DuplicateExtCleaner::scan() {
     count_label_->setVisible(false);
 
     QString escaped = QRegularExpression::escape(ext);
-    QRegularExpression re(QStringLiteral("^(.*?)(") + escaped + QStringLiteral("){2,}$"));
+    QRegularExpression re(QStringLiteral("^(.*?)(") + escaped + QStringLiteral("){2,}$"),
+                         QRegularExpression::CaseInsensitiveOption);
     if (!re.isValid()) return;
+
+    emit status_message(QStringLiteral("Recherche en cours..."));
+    btn_scan_->setEnabled(false);
+    QCoreApplication::processEvents();
 
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     QSet<QString> seen;
@@ -115,6 +123,8 @@ void DuplicateExtCleaner::scan() {
         ++count;
     }
 
+    btn_scan_->setEnabled(true);
+
     if (count > 0) {
         count_label_->setText(
             QString::number(count) + QStringLiteral(" fichier(s) trouvé(s)"));
@@ -127,7 +137,7 @@ void DuplicateExtCleaner::scan() {
 }
 
 void DuplicateExtCleaner::fix() {
-    int fixed = 0, errors = 0;
+    int fixed = 0, errors = 0, skipped = 0;
 
     for (int row = 0; row < table_->rowCount(); ++row) {
         auto* status_item = table_->item(row, 2);
@@ -140,8 +150,54 @@ void DuplicateExtCleaner::fix() {
         QString new_path = fi.absolutePath() + QStringLiteral("/") + new_name;
 
         if (QFile::exists(new_path)) {
-            table_->item(row, 2)->setText(QStringLiteral("✗ existe déjà"));
-            ++errors;
+            if (global_choice_ == ConflictResolutionDialog::OverwriteAll) {
+                if (QFile::remove(new_path) && QFile::rename(old_path, new_path)) {
+                    table_->item(row, 2)->setText(QStringLiteral("✓ écrasé"));
+                    ++fixed;
+                } else {
+                    table_->item(row, 2)->setText(QStringLiteral("✗ erreur écrasement"));
+                    ++errors;
+                }
+                continue;
+            }
+
+            if (global_choice_ == ConflictResolutionDialog::SkipAll) {
+                table_->item(row, 2)->setText(QStringLiteral("— ignoré"));
+                ++skipped;
+                continue;
+            }
+
+            ConflictResolutionDialog dlg(old_path, new_path, this);
+            if (dlg.exec() == QDialog::Rejected) {
+                global_choice_ = ConflictResolutionDialog::Cancel;
+                table_->item(row, 2)->setText(QStringLiteral("— annulé"));
+                ++errors;
+                break;
+            }
+
+            global_choice_ = dlg.chosenAction();
+
+            switch (global_choice_) {
+            case ConflictResolutionDialog::Overwrite:
+            case ConflictResolutionDialog::OverwriteAll:
+                if (QFile::remove(new_path) && QFile::rename(old_path, new_path)) {
+                    table_->item(row, 2)->setText(QStringLiteral("✓ écrasé"));
+                    ++fixed;
+                } else {
+                    table_->item(row, 2)->setText(QStringLiteral("✗ erreur écrasement"));
+                    ++errors;
+                }
+                break;
+
+            case ConflictResolutionDialog::Skip:
+            case ConflictResolutionDialog::SkipAll:
+                table_->item(row, 2)->setText(QStringLiteral("— ignoré"));
+                ++skipped;
+                break;
+
+            default:
+                break;
+            }
             continue;
         }
 
@@ -154,7 +210,11 @@ void DuplicateExtCleaner::fix() {
         }
     }
 
+    global_choice_ = ConflictResolutionDialog::Skip;
+
     QString msg = QString::number(fixed) + QStringLiteral(" renommé(s)");
+    if (skipped > 0)
+        msg += QStringLiteral(", ") + QString::number(skipped) + QStringLiteral(" ignoré(s)");
     if (errors > 0)
         msg += QStringLiteral(", ") + QString::number(errors) + QStringLiteral(" erreur(s)");
     emit status_message(msg);

@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QCloseEvent>
+#include <QStackedWidget>
 #include "Project.hpp"
 #include "ComponentToolbox.hpp"
 #include "UpdateChecker.hpp"
@@ -22,6 +23,7 @@ protected:
     void closeEvent(QCloseEvent* event) override;
 
 private slots:
+    void nouveau_projet();
     void charger_projet();
     void sauvegarder_projet();
     void basculer_toolbox();
@@ -39,6 +41,7 @@ private:
     void create_menus();
     void create_toolbar();
     void update_title();
+    void update_project_page();
     void load_settings();
     void save_settings();
     void download_language(const QString& code);
@@ -47,11 +50,12 @@ private:
     ComponentToolbox* toolbox_;
     QDockWidget* dock_toolbox_;
     DuplicateExtCleaner* duplicate_cleaner_;
-    QDockWidget* dock_cleaner_;
     UpdateChecker* update_checker_;
     LangueManager* langue_;
-    QLabel* central_label_;
-    QLabel* dock_title_;
+    QStackedWidget* stack_;
+    QWidget* project_page_;
+    QLabel* proj_name_label_;
+    QLabel* proj_path_label_;
 
     QMenu* menu_fichier_;
     QMenu* menu_outils_;

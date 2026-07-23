@@ -18,13 +18,15 @@ ComponentToolbox::ComponentToolbox(QWidget* parent)
     tree_->setSelectionMode(QAbstractItemView::SingleSelection);
     tree_->setAnimated(true);
     tree_->setIndentation(12);
+    tree_->setStyleSheet(
+        "QTreeWidget::item { padding: 4px 2px; }"
+        "QTreeWidget::item:selected { background-color: #d0e4f6; }");
     lay->addWidget(tree_);
 
     populate_categories();
 
     connect(tree_, &QTreeWidget::itemClicked, this,
         [this](QTreeWidgetItem* item, int) {
-            if (!item->parent()) return;
             QVariantMap data = item->data(0, Qt::UserRole).toMap();
             if (!data.isEmpty())
                 emit component_selected(data);
@@ -45,6 +47,14 @@ void ComponentToolbox::populate_categories() {
         i->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
     };
 
+    // Projet — default item at top
+    auto* projet_item = new QTreeWidgetItem(tree_, {QStringLiteral("Projet")});
+    projet_item->setData(0, Qt::UserRole, QVariantMap{{"type", "project"}});
+    projet_item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+    QFont f = projet_item->font(0);
+    f.setBold(true);
+    projet_item->setFont(0, f);
+
     auto* nettoyage = groupe("🧹 Nettoyage");
     item(nettoyage, "Supprimer fichiers vides",
          {{"type", "cleanup"}, {"tool", "clean_all"}});
@@ -52,4 +62,13 @@ void ComponentToolbox::populate_categories() {
          {{"type", "cleanup"}, {"tool", "strip_extension"}});
     item(nettoyage, "Déduplicateur d'extensions",
          {{"type", "cleanup"}, {"tool", "dedup_extension"}});
+}
+
+void ComponentToolbox::selectProjectItem() {
+    if (tree_->topLevelItemCount() == 0) return;
+    auto* first = tree_->topLevelItem(0);
+    tree_->setCurrentItem(first);
+    QVariantMap data = first->data(0, Qt::UserRole).toMap();
+    if (!data.isEmpty())
+        emit component_selected(data);
 }

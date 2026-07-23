@@ -19,6 +19,9 @@
 #include <QSettings>
 #include <QDir>
 #include <QCoreApplication>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     resize(1000, 650);
@@ -28,6 +31,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
 
     load_settings();
 
+    // --- Left dock: toolbox ---
     toolbox_ = new ComponentToolbox;
     dock_toolbox_ = new QDockWidget(this);
     dock_toolbox_->setWidget(toolbox_);
@@ -35,41 +39,84 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     dock_toolbox_->setMaximumWidth(260);
     addDockWidget(Qt::LeftDockWidgetArea, dock_toolbox_);
 
+    // --- Central area: stacked pages ---
+    stack_ = new QStackedWidget;
+    setCentralWidget(stack_);
+
+    // Page 0: Project page
+    project_page_ = new QWidget;
+    auto* projLayout = new QVBoxLayout(project_page_);
+    projLayout->setAlignment(Qt::AlignCenter);
+
+    auto* proj_title = new QLabel;
+    proj_title->setObjectName("proj_title");
+    proj_title->setAlignment(Qt::AlignCenter);
+    proj_title->setStyleSheet("font-size: 20px; font-weight: bold;");
+
+    proj_name_label_ = new QLabel;
+    proj_name_label_->setAlignment(Qt::AlignCenter);
+    proj_name_label_->setStyleSheet("font-size: 14px; color: #555;");
+
+    proj_path_label_ = new QLabel;
+    proj_path_label_->setAlignment(Qt::AlignCenter);
+    proj_path_label_->setStyleSheet("color: #888; font-style: italic;");
+    proj_path_label_->setWordWrap(true);
+
+    auto* btnLayout = new QHBoxLayout;
+    btnLayout->setAlignment(Qt::AlignCenter);
+    btnLayout->setSpacing(10);
+    auto* btnNew = new QPushButton("Nouveau");
+    auto* btnLoad = new QPushButton("Charger");
+    auto* btnSave = new QPushButton("Sauvegarder");
+    btnNew->setMinimumWidth(120);
+    btnLoad->setMinimumWidth(120);
+    btnSave->setMinimumWidth(120);
+    btnLayout->addWidget(btnNew);
+    btnLayout->addWidget(btnLoad);
+    btnLayout->addWidget(btnSave);
+
+    projLayout->addStretch();
+    projLayout->addWidget(proj_title);
+    projLayout->addSpacing(8);
+    projLayout->addWidget(proj_name_label_);
+    projLayout->addSpacing(4);
+    projLayout->addWidget(proj_path_label_);
+    projLayout->addSpacing(20);
+    projLayout->addLayout(btnLayout);
+    projLayout->addStretch();
+
+    connect(btnNew, &QPushButton::clicked, this, &MainWindow::nouveau_projet);
+    connect(btnLoad, &QPushButton::clicked, this, &MainWindow::charger_projet);
+    connect(btnSave, &QPushButton::clicked, this, &MainWindow::sauvegarder_projet);
+
+    stack_->addWidget(project_page_);  // index 0
+
+    // Page 1: Duplicate extension cleaner
     duplicate_cleaner_ = new DuplicateExtCleaner;
-    dock_cleaner_ = new QDockWidget(this);
-    dock_cleaner_->setWidget(duplicate_cleaner_);
-    dock_cleaner_->setMinimumWidth(300);
-    dock_cleaner_->setMaximumWidth(500);
-    addDockWidget(Qt::RightDockWidgetArea, dock_cleaner_);
-    dock_cleaner_->hide();
+    stack_->addWidget(duplicate_cleaner_);  // index 1
 
     connect(duplicate_cleaner_, &DuplicateExtCleaner::status_message,
             this, [this](const QString& msg) {
         statusBar()->showMessage(msg);
     });
 
-    central_label_ = new QLabel;
-    central_label_->setAlignment(Qt::AlignCenter);
-    central_label_->setStyleSheet("color: #888; font-size: 14px;");
-    setCentralWidget(central_label_);
-
+    // --- Toolbox selection -> page switching ---
     connect(toolbox_, &ComponentToolbox::component_selected,
             this, [this](const QVariantMap& data) {
-        if (data.value("type") == "cleanup") {
-            if (data.value("tool") == "strip_extension") {
+        QString type = data.value("type").toString();
+        if (type == "project") {
+            stack_->setCurrentIndex(0);
+        } else if (type == "cleanup") {
+            QString tool = data.value("tool").toString();
+            if (tool == "strip_extension") {
                 StripDialog dlg({}, this);
                 dlg.exec();
-            } else if (data.value("tool") == "dedup_extension") {
-                dock_cleaner_->setVisible(!dock_cleaner_->isVisible());
+            } else if (tool == "dedup_extension") {
+                stack_->setCurrentWidget(duplicate_cleaner_);
             } else {
                 CleanupDialog dlg({}, this);
                 dlg.exec();
             }
-        } else {
-            statusBar()->showMessage(
-                QString(langue_->get("status.component_selected") + " : %1 (%2)")
-                    .arg(data.value("nom").toString())
-                    .arg(data.value("type").toString()));
         }
     });
 
@@ -87,6 +134,9 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) {
     create_toolbar();
     retranslateUi();
     statusBar()->showMessage(langue_->get("status.ready"));
+
+    // Select "Projet" in toolbox -> shows project page
+    toolbox_->selectProjectItem();
 
     update_checker_->checkForUpdates();
 }
@@ -178,7 +228,22 @@ void MainWindow::retranslateUi() {
     a_tb_sauver_->setText(langue_->get("toolbar.save"));
 
     dock_toolbox_->setWindowTitle(langue_->get("dock.toolbox"));
-    central_label_->setText(langue_->get("central.placeholder"));
+
+    auto* proj_title = project_page_->findChild<QLabel*>("proj_title");
+    if (proj_title)
+        proj_title->setText(langue_->get("project.title"));
+
+    if (!project_.file_path().isEmpty()) {
+        proj_name_label_->setText(
+            QStringLiteral("%1 : %2")
+                .arg(langue_->get("project.name_label"), project_.name()));
+        proj_path_label_->setText(
+            QStringLiteral("%1 : %2")
+                .arg(langue_->get("project.path_label"), project_.file_path()));
+    } else {
+        proj_name_label_->setText(langue_->get("project.no_project"));
+        proj_path_label_->clear();
+    }
 
     setWindowTitle(langue_->get("app.name"));
 }
@@ -247,6 +312,31 @@ void MainWindow::show_about() {
     QMessageBox::about(this, title, text);
 }
 
+void MainWindow::update_project_page() {
+    if (!project_.file_path().isEmpty()) {
+        proj_name_label_->setText(
+            QStringLiteral("%1 : %2")
+                .arg(langue_->get("project.name_label"), project_.name()));
+        proj_path_label_->setText(
+            QStringLiteral("%1 : %2")
+                .arg(langue_->get("project.path_label"), project_.file_path()));
+    } else {
+        proj_name_label_->setText(langue_->get("project.no_project"));
+        proj_path_label_->clear();
+    }
+}
+
+void MainWindow::nouveau_projet() {
+    // Reset project to defaults
+    project_ = Project();
+    project_.set_name(langue_->get("project.default_name"));
+    update_project_page();
+    update_title();
+    statusBar()->showMessage(langue_->get("status.ready"));
+    stack_->setCurrentIndex(0);
+    toolbox_->selectProjectItem();
+}
+
 void MainWindow::charger_projet() {
     QString p = QFileDialog::getOpenFileName(
         this, langue_->get("menu.file.load"), QString(),
@@ -259,8 +349,13 @@ void MainWindow::charger_projet() {
         return;
     }
 
+    update_project_page();
     update_title();
     statusBar()->showMessage(langue_->get("status.loaded") + " : " + p);
+
+    // Switch to project page if not already there
+    stack_->setCurrentIndex(0);
+    toolbox_->selectProjectItem();
 }
 
 void MainWindow::sauvegarder_projet() {
@@ -275,6 +370,7 @@ void MainWindow::sauvegarder_projet() {
         return;
     }
 
+    update_project_page();
     update_title();
     statusBar()->showMessage(langue_->get("status.saved") + " : " + p);
 }

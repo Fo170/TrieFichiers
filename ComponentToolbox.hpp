@@ -9,6 +9,7 @@ class ComponentToolbox : public QWidget {
     Q_OBJECT
 public:
     explicit ComponentToolbox(QWidget* parent = nullptr);
+    void selectProjectItem();
 
 signals:
     void component_selected(const QVariantMap& data);

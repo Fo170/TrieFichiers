@@ -8,6 +8,10 @@ Application Qt6 de nettoyage et tri de fichiers — multi-plateforme (Windows + 
 - **Analyse préalable** : voir le nombre d'éléments avant de les supprimer
 - **Suppression d'une extension spécifique** : renomme les fichiers en leur retirant une extension ciblée (ex: `.torrent` → sans extension)
 - **Déduplicateur d'extensions** : corrige les fichiers avec extensions dupliquées (`.torrent.torrent` → `.torrent`) — v1.0.3
+- Résolution de conflits avec aperçu détaillé des deux fichiers (écraser/ignorer/tout/annuler) — v1.0.4
+- Recherche insensible à la casse — v1.0.4
+- **Zone centrale repensée** : page Projet par défaut avec Nouveau/Charger/Sauvegarder, outils en plein écran via `QStackedWidget` — v1.0.4
+- **Feedback visuel** : bouton Rechercher désactivé + message en barre d'état pendant l'analyse — v1.0.4
 - **Multi-langue** : Français / Anglais, détection automatique
 - **Vérification de mises à jour** en ligne via GitHub
 
@@ -21,6 +25,7 @@ TrieFichiers/
 ├── MainWindow.hpp/.cpp
 ├── ComponentToolbox.hpp/.cpp
 ├── DuplicateExtCleaner.hpp/.cpp
+├── ConflictResolutionDialog.hpp/.cpp
 ├── StripDialog.hpp/.cpp
 ├── FolderCleaner.hpp/.cpp
 ├── CleanupDialog.hpp/.cpp
